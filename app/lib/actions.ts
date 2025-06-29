@@ -17,7 +17,12 @@ export type State = {
   message?: string | null;
 };
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+const sql = postgres(process.env.POSTGRES_URL!, { 
+  ssl: 'require',
+  connect_timeout: 10,
+  idle_timeout: 20,
+  max_lifetime: 60 * 30,
+});
 const FormSchema = z.object({
   id: z.string(),
   customerId: z.string({
