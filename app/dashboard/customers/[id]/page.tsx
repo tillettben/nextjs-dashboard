@@ -6,15 +6,16 @@ import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const customer = await fetchCustomerById(params.id);
+  const { id } = await params;
+  const customer = await fetchCustomerById(id);
 
   if (!customer) {
     return {
@@ -28,7 +29,8 @@ export async function generateMetadata({
 }
 
 export default async function Page({ params }: PageProps) {
-  const customer = await fetchCustomerById(params.id);
+  const { id } = await params;
+  const customer = await fetchCustomerById(id);
 
   if (!customer) {
     notFound();
