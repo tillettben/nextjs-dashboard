@@ -1,0 +1,63 @@
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { fetchCustomerById } from '@/app/lib/data';
+import { CustomerCard } from '@/app/ui/customers/customer-card';
+import Link from 'next/link';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const customer = await fetchCustomerById(params.id);
+
+  if (!customer) {
+    return {
+      title: 'Customer Not Found',
+    };
+  }
+
+  return {
+    title: `${customer.name} - Customer Details`,
+  };
+}
+
+export default async function Page({ params }: PageProps) {
+  const customer = await fetchCustomerById(params.id);
+
+  if (!customer) {
+    notFound();
+  }
+
+  return (
+    <div className='space-y-6'>
+      <div className='flex items-center gap-4'>
+        <Link
+          href='/dashboard/customers'
+          className='flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors'
+        >
+          <ArrowLeftIcon className='w-4 h-4' />
+          Back to Customers
+        </Link>
+      </div>
+
+      <div>
+        <h1 className='text-2xl font-bold text-gray-900 mb-2'>
+          Customer Details
+        </h1>
+        <p className='text-gray-600'>
+          View detailed information for {customer.name}.
+        </p>
+      </div>
+
+      <div className='max-w-md'>
+        <CustomerCard customer={customer} clickable={false} />
+      </div>
+    </div>
+  );
+}
