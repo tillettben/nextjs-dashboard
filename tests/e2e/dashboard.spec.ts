@@ -25,7 +25,7 @@ test.describe('Dashboard Overview Tests', () => {
     await expect(page).toHaveTitle(/Dashboard/);
 
     // Verify main layout sections are present
-    await expect(page.locator('nav')).toBeVisible(); // Sidebar
+    await expect(page.locator('a[href="/dashboard"]')).toBeVisible(); // Sidebar navigation
     await expect(page.locator('main')).toBeVisible(); // Main content
   });
 

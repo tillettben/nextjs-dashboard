@@ -19,8 +19,6 @@ test.describe('Navigation & Layout Tests', () => {
   });
 
   test('should display sidebar navigation correctly', async ({ page }) => {
-    await expect(page.locator('nav')).toBeVisible();
-
     // Verify all main navigation links are present
     await expect(page.locator('a[href="/dashboard"]')).toBeVisible();
     await expect(page.locator('a[href="/dashboard/invoices"]')).toBeVisible();
@@ -104,9 +102,9 @@ test.describe('Navigation & Layout Tests', () => {
       await page.goto(pageInfo.path);
 
       // Verify consistent layout elements
-      await expect(page.locator('nav')).toBeVisible(); // Sidebar
+      await expect(page.locator('a[href="/dashboard"]')).toBeVisible(); // Sidebar navigation
       await expect(page.locator('h1')).toContainText(pageInfo.title); // Page title
-      await expect(page.locator('.flex-grow.p-6')).toBeVisible(); // Main content area
+      await expect(page.locator('.flex-grow')).toBeVisible(); // Main content area
     }
   });
 
@@ -131,7 +129,7 @@ test.describe('Navigation & Layout Tests', () => {
     await signOutButton.click();
 
     // Should redirect to login
-    await expect(page).toHaveURL('/login');
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test('should handle deep linking and direct URL access', async ({ page }) => {

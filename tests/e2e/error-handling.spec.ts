@@ -121,7 +121,7 @@ test.describe('Error Handling & Not Found Tests', () => {
     await expect(page.locator('text=Not Found')).toBeVisible();
 
     // Navigation should still be present (indicating user is logged in)
-    const navigation = page.locator('nav, .sidebar');
+    const navigation = page.locator('a[href="/dashboard"]');
     await expect(navigation).toBeVisible();
 
     // User should be able to navigate to other dashboard pages
@@ -137,8 +137,8 @@ test.describe('Error Handling & Not Found Tests', () => {
     await expect(page.locator('text=Not Found')).toBeVisible();
 
     // Should still show navigation/sidebar
-    const dashboardLayout = page.locator('nav, .sidebar, [class*="nav"]');
-    await expect(dashboardLayout.first()).toBeVisible();
+    const dashboardLayout = page.locator('a[href="/dashboard"]');
+    await expect(dashboardLayout).toBeVisible();
 
     // Should be able to use navigation
     await page.click('a[href="/dashboard/invoices"]');

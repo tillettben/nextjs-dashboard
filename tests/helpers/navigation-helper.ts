@@ -50,12 +50,16 @@ export class NavigationHelper {
   }
 
   async clickBreadcrumb(breadcrumbText: string) {
-    await this.page.click(`nav a:has-text("${breadcrumbText}")`);
+    await this.page.click(
+      `nav[aria-label="Breadcrumb"] a:has-text("${breadcrumbText}")`
+    );
   }
 
   async verifyBreadcrumbPath(expectedBreadcrumbs: string[]) {
     for (const breadcrumb of expectedBreadcrumbs) {
-      await expect(this.page.locator('nav')).toContainText(breadcrumb);
+      await expect(
+        this.page.locator('nav[aria-label="Breadcrumb"]')
+      ).toContainText(breadcrumb);
     }
   }
 }

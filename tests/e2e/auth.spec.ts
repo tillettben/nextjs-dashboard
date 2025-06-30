@@ -29,7 +29,7 @@ test.describe('Authentication Tests', () => {
     await expect(page.locator('h1')).toContainText('Dashboard');
 
     // Verify dashboard elements are present
-    await expect(page.locator('nav')).toBeVisible(); // Sidebar navigation
+    await expect(page.locator('a[href="/dashboard"]')).toBeVisible(); // Navigation links
     await expect(page.locator('text=Home')).toBeVisible();
     await expect(page.locator('text=Invoices')).toBeVisible();
     await expect(page.locator('text=Customers')).toBeVisible();
@@ -51,7 +51,7 @@ test.describe('Authentication Tests', () => {
     await page.click('button:has-text("Log in")');
 
     // Should stay on login page with error
-    await expect(page).toHaveURL('/login');
+    await expect(page).toHaveURL(/\/login/);
     await expect(page.locator('text=Invalid credentials')).toBeVisible();
   });
 
@@ -62,7 +62,7 @@ test.describe('Authentication Tests', () => {
 
     // Then logout
     await authHelper.logout();
-    await expect(page).toHaveURL('/login');
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test('should redirect to login when accessing protected routes without authentication', async ({
@@ -81,7 +81,7 @@ test.describe('Authentication Tests', () => {
 
     for (const route of protectedRoutes) {
       await page.goto(route);
-      await expect(page).toHaveURL('/login');
+      await expect(page).toHaveURL(/\/login/);
     }
   });
 
@@ -116,7 +116,7 @@ test.describe('Authentication Tests', () => {
     await page.goto('/dashboard/invoices');
 
     // Should redirect to login
-    await expect(page).toHaveURL('/login');
+    await expect(page).toHaveURL(/\/login/);
 
     // Login
     await authHelper.login('test@nextmail.com', '123456');

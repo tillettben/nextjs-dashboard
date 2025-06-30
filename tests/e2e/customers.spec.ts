@@ -39,9 +39,17 @@ test.describe('Customer Management Tests', () => {
     await expect(customerCards).toBeVisible();
 
     // Verify customer information elements
-    await expect(
-      page.locator('text=John Doe').or(page.locator('text=Jane Smith'))
-    ).toBeVisible();
+    const hasJohnDoe = await page
+      .locator('text=John Doe')
+      .first()
+      .isVisible()
+      .catch(() => false);
+    const hasJaneSmith = await page
+      .locator('text=Jane Smith')
+      .first()
+      .isVisible()
+      .catch(() => false);
+    expect(hasJohnDoe || hasJaneSmith).toBe(true);
 
     // Verify email addresses are shown
     const emails = page.locator('text=@example.com').first();
