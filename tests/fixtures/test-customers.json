@@ -1,0 +1,38 @@
+[
+  {
+    "id": "d6e15727-9fe1-4961-8c5b-ea44a9bd81aa",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "image_url": "/customers/john-doe.png"
+  },
+  {
+    "id": "3958dc9e-742f-4377-85e9-fec4b6a6442a",
+    "name": "Jane Smith", 
+    "email": "jane@example.com",
+    "image_url": "/customers/jane-smith.png"
+  },
+  {
+    "id": "3958dc9e-737f-4377-85e9-fec4b6a6442a",
+    "name": "Robert Johnson",
+    "email": "robert@example.com",
+    "image_url": "/customers/robert-johnson.png"
+  },
+  {
+    "id": "76d65c26-f784-44a2-ac19-586678f7c2f2",
+    "name": "Alice Brown",
+    "email": "alice@example.com",
+    "image_url": "/customers/alice-brown.png"
+  },
+  {
+    "id": "CC27C14A-0ACF-4F4A-A6C9-D45682C144B9",
+    "name": "Michael Wilson",
+    "email": "michael@example.com",
+    "image_url": "/customers/michael-wilson.png"
+  },
+  {
+    "id": "13D07535-C59E-4157-A011-F8D2EF4E0CBB",
+    "name": "Sarah Davis",
+    "email": "sarah@example.com",
+    "image_url": "/customers/sarah-davis.png"
+  }
+] 

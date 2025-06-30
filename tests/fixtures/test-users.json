@@ -1,0 +1,14 @@
+[
+  {
+    "id": "410544b2-4001-4271-9855-fec4b6a6442a",
+    "name": "Test User",
+    "email": "test@nextmail.com",
+    "password": "123456"
+  },
+  {
+    "id": "3958dc9e-712f-4377-85e9-fec4b6a6442b",
+    "name": "Test Admin",
+    "email": "admin@nextmail.com", 
+    "password": "admin123"
+  }
+] 
