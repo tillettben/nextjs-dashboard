@@ -161,7 +161,9 @@ export default function EditInvoiceForm({
         >
           Cancel
         </Link>
-        <Button type='submit'>Edit Invoice</Button>
+        <Button type='submit' data-testid='edit-invoice-submit'>
+          Edit Invoice
+        </Button>
       </div>
     </form>
   );

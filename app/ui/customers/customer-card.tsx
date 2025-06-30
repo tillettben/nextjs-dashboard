@@ -13,7 +13,10 @@ export function CustomerCard({
   clickable = true,
 }: CustomerCardProps) {
   const cardContent = (
-    <Card className='hover:shadow-lg transition-shadow duration-200 cursor-pointer'>
+    <Card
+      className='hover:shadow-lg transition-shadow duration-200 cursor-pointer'
+      data-testid='customer-card'
+    >
       <CardHeader className='pb-3'>
         <div className='flex items-center space-x-4'>
           <div className='relative'>

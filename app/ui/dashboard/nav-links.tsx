@@ -38,6 +38,7 @@ export default function NavLinks() {
                 'bg-sky-100 text-blue-600': pathname === link.href,
               }
             )}
+            data-testid={`nav-${link.name.toLowerCase()}`}
           >
             <LinkIcon className='w-6' />
             <p className='hidden md:block'>{link.name}</p>

@@ -37,11 +37,12 @@ export default async function Page({ params }: PageProps) {
   }
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-6' data-testid='customer-detail-page'>
       <div className='flex items-center gap-4'>
         <Link
           href='/dashboard/customers'
           className='flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors'
+          data-testid='back-to-customers'
         >
           <ArrowLeftIcon className='w-4 h-4' />
           Back to Customers
@@ -49,7 +50,10 @@ export default async function Page({ params }: PageProps) {
       </div>
 
       <div>
-        <h1 className='text-2xl font-bold text-gray-900 mb-2'>
+        <h1
+          className='text-2xl font-bold text-gray-900 mb-2'
+          data-testid='customer-detail-title'
+        >
           Customer Details
         </h1>
         <p className='text-gray-600'>
@@ -57,7 +61,7 @@ export default async function Page({ params }: PageProps) {
         </p>
       </div>
 
-      <div className='max-w-md'>
+      <div className='max-w-md' data-testid='customer-detail-card'>
         <CustomerCard customer={customer} clickable={false} />
       </div>
     </div>
