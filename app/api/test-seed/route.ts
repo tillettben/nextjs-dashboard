@@ -2,23 +2,24 @@ import bcrypt from 'bcrypt';
 import postgres from 'postgres';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import type { User, Customer, Invoice, Revenue } from '../../lib/definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 // Load test fixtures
-const testUsers = JSON.parse(
+const testUsers: User[] = JSON.parse(
   readFileSync(join(process.cwd(), 'tests/fixtures/test-users.json'), 'utf8')
 );
-const testCustomers = JSON.parse(
+const testCustomers: Customer[] = JSON.parse(
   readFileSync(
     join(process.cwd(), 'tests/fixtures/test-customers.json'),
     'utf8'
   )
 );
-const testInvoices = JSON.parse(
+const testInvoices: Invoice[] = JSON.parse(
   readFileSync(join(process.cwd(), 'tests/fixtures/test-invoices.json'), 'utf8')
 );
-const testRevenue = JSON.parse(
+const testRevenue: Revenue[] = JSON.parse(
   readFileSync(join(process.cwd(), 'tests/fixtures/test-revenue.json'), 'utf8')
 );
 
@@ -37,7 +38,7 @@ async function seedTestUsers() {
   await sql`DELETE FROM users`;
 
   const insertedUsers = await Promise.all(
-    testUsers.map(async (user: any) => {
+    testUsers.map(async user => {
       const hashedPassword = await bcrypt.hash(user.password, 10);
       return sql`
         INSERT INTO users (id, name, email, password)
@@ -70,7 +71,7 @@ async function seedTestCustomers() {
 
   const insertedCustomers = await Promise.all(
     testCustomers.map(
-      (customer: any) =>
+      customer =>
         sql`
         INSERT INTO customers (id, name, email, image_url)
         VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
@@ -103,7 +104,7 @@ async function seedTestInvoices() {
 
   const insertedInvoices = await Promise.all(
     testInvoices.map(
-      (invoice: any) =>
+      invoice =>
         sql`
         INSERT INTO invoices (customer_id, amount, status, date)
         VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
@@ -132,7 +133,7 @@ async function seedTestRevenue() {
 
   const insertedRevenue = await Promise.all(
     testRevenue.map(
-      (rev: any) =>
+      rev =>
         sql`
         INSERT INTO revenue (month, revenue)
         VALUES (${rev.month}, ${rev.revenue})
