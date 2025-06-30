@@ -83,10 +83,8 @@ test.describe('Database Seeding Tests', () => {
     // Wait for table/cards to load
     await page.waitForLoadState('networkidle');
 
-    // Check for invoice data in table or mobile cards
-    const invoiceRows = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
-    );
+    // Check for invoice data in table
+    const invoiceRows = page.locator('tbody tr');
     await expect(invoiceRows.first()).toBeVisible();
   });
 

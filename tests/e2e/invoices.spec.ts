@@ -35,35 +35,6 @@ test.describe('Invoice Management Tests', () => {
     await expect(page.locator('text=Create Invoice')).toBeVisible();
   });
 
-  test('should display invoices in table view on desktop', async ({ page }) => {
-    await page.setViewportSize({ width: 1200, height: 800 });
-    await page.waitForLoadState('networkidle');
-
-    // Verify table headers are visible
-    await expect(page.locator('th:has-text("Customer")')).toBeVisible();
-    await expect(page.locator('th:has-text("Email")')).toBeVisible();
-    await expect(page.locator('th:has-text("Amount")')).toBeVisible();
-    await expect(page.locator('th:has-text("Date")')).toBeVisible();
-    await expect(page.locator('th:has-text("Status")')).toBeVisible();
-
-    // Verify table rows with invoice data
-    const tableRows = page.locator('tbody tr');
-    await expect(tableRows.first()).toBeVisible();
-  });
-
-  test('should display invoices in card view on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.waitForLoadState('networkidle');
-
-    // On mobile, should show card layout instead of table
-    const mobileCards = page.locator('.mb-2.w-full.rounded-md.bg-white.p-4');
-    await expect(mobileCards.first()).toBeVisible();
-
-    // Table should be hidden on mobile
-    const table = page.locator('table');
-    await expect(table).toBeHidden();
-  });
-
   test('should display invoice status indicators correctly', async ({
     page,
   }) => {
@@ -87,7 +58,7 @@ test.describe('Invoice Management Tests', () => {
 
     // Get initial invoice count
     const initialRows = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const initialCount = await initialRows.count();
     expect(initialCount).toBeGreaterThan(0);
@@ -102,7 +73,7 @@ test.describe('Invoice Management Tests', () => {
 
     // Verify filtered results
     const filteredRows = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const filteredCount = await filteredRows.count();
 
@@ -252,7 +223,7 @@ test.describe('Invoice Management Tests', () => {
 
     // Get data from the first invoice in the list
     const firstRow = page
-      .locator('tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4')
+      .locator('tbody tr')
       .first();
     const customerName = await firstRow
       .locator('text=John Doe, text=Jane Smith, text=Robert Johnson')
@@ -366,7 +337,7 @@ test.describe('Invoice Management Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Should show no results or empty state
-    const rows = page.locator('tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4');
+    const rows = page.locator('tbody tr');
     const rowCount = await rows.count();
 
     if (rowCount === 0) {

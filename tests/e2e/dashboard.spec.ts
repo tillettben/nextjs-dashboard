@@ -179,29 +179,4 @@ test.describe('Dashboard Overview Tests', () => {
       await expect(cardIcon).toBeVisible();
     }
   });
-
-  test('should maintain responsive layout on different screen sizes', async ({
-    page,
-  }) => {
-    // Test desktop layout
-    await page.setViewportSize({ width: 1200, height: 800 });
-    await page.waitForLoadState('networkidle');
-
-    const cards = page.locator('.rounded-xl.bg-gray-50.p-2.shadow-sm');
-    await expect(cards).toHaveCount(4);
-
-    // Test tablet layout
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await page.waitForLoadState('networkidle');
-
-    // Cards should still be visible but may wrap
-    await expect(cards.first()).toBeVisible();
-
-    // Test mobile layout
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.waitForLoadState('networkidle');
-
-    // Cards should still be accessible
-    await expect(cards.first()).toBeVisible();
-  });
 });

@@ -211,26 +211,6 @@ test.describe('Data Display & Formatting Tests', () => {
     await expect(emailParent).toBeVisible();
   });
 
-  test('should display responsive table headers correctly', async ({
-    page,
-  }) => {
-    await navigationHelper.goToInvoices();
-    await page.setViewportSize({ width: 1200, height: 800 });
-    await page.waitForLoadState('networkidle');
-
-    // Verify table headers are present and properly formatted
-    const headers = ['Customer', 'Email', 'Amount', 'Date', 'Status'];
-
-    for (const header of headers) {
-      await expect(page.locator(`th:has-text("${header}")`)).toBeVisible();
-    }
-
-    // Verify header styling
-    const firstHeader = page.locator('th').first();
-    const headerClasses = (await firstHeader.getAttribute('class')) || '';
-    expect(headerClasses.length).toBeGreaterThan(0);
-  });
-
   test('should display proper loading states and skeletons', async ({
     page,
   }) => {

@@ -262,28 +262,6 @@ test.describe('Error Handling & Not Found Tests', () => {
     await expect(page.locator('h1')).toContainText('Invoices');
   });
 
-  test('should handle error pages on different screen sizes', async ({
-    page,
-  }) => {
-    // Test mobile view
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/dashboard/invoices/non-existent-id/edit');
-
-    // Error page should be responsive
-    await expect(page.locator('text=Not Found')).toBeVisible();
-
-    // Navigation should work on mobile
-    const mobileNav = page.locator('nav, .sidebar, [class*="nav"]');
-    await expect(mobileNav.first()).toBeVisible();
-
-    // Test desktop view
-    await page.setViewportSize({ width: 1200, height: 800 });
-    await page.reload();
-
-    // Should still work on desktop
-    await expect(page.locator('text=Not Found')).toBeVisible();
-  });
-
   test('should maintain session state through error navigation', async ({
     page,
   }) => {

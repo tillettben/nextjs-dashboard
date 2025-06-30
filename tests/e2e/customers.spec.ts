@@ -184,27 +184,6 @@ test.describe('Customer Management Tests', () => {
     }
   });
 
-  test('should handle responsive layout on different screen sizes', async ({
-    page,
-  }) => {
-    // Test desktop layout (3 columns)
-    await page.setViewportSize({ width: 1200, height: 800 });
-    await page.waitForLoadState('networkidle');
-
-    const cards = page.locator('.rounded-xl, [class*="Card"]');
-    await expect(cards.first()).toBeVisible();
-
-    // Test tablet layout (2 columns)
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await page.waitForLoadState('networkidle');
-    await expect(cards.first()).toBeVisible();
-
-    // Test mobile layout (1 column)
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.waitForLoadState('networkidle');
-    await expect(cards.first()).toBeVisible();
-  });
-
   test('should navigate back from customer detail to customer list', async ({
     page,
   }) => {

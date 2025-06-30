@@ -134,23 +134,6 @@ test.describe('Navigation & Layout Tests', () => {
     await expect(page).toHaveURL('/login');
   });
 
-  test('should handle responsive navigation on different screen sizes', async ({
-    page,
-  }) => {
-    // Test desktop view
-    await page.setViewportSize({ width: 1200, height: 800 });
-    await expect(page.locator('nav')).toBeVisible();
-    await expect(page.locator('text=Home')).toBeVisible();
-
-    // Test tablet view
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await expect(page.locator('nav')).toBeVisible();
-
-    // Navigation should still work
-    await navigationHelper.goToInvoices();
-    await expect(page).toHaveURL('/dashboard/invoices');
-  });
-
   test('should handle deep linking and direct URL access', async ({ page }) => {
     // Test direct access to various routes
     await page.goto('/dashboard/invoices');

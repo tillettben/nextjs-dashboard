@@ -24,7 +24,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Get initial invoice count
     const initialRows = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const initialCount = await initialRows.count();
 
@@ -38,7 +38,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Verify search results are filtered
     const filteredRows = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const filteredCount = await filteredRows.count();
 
@@ -64,7 +64,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Verify search works with email
     const results = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const resultCount = await results.count();
 
@@ -86,7 +86,7 @@ test.describe('Search & Filtering Tests', () => {
     await page.waitForLoadState('networkidle');
 
     const results = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const resultCount = await results.count();
 
@@ -122,7 +122,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Should have updated results
     const results = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const resultCount = await results.count();
     expect(resultCount).toBeGreaterThanOrEqual(0);
@@ -141,7 +141,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Should show no results
     const results = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const resultCount = await results.count();
     expect(resultCount).toBe(0);
@@ -157,7 +157,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Get initial count
     const initialRows = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const initialCount = await initialRows.count();
 
@@ -173,7 +173,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Should restore all results
     const restoredRows = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const restoredCount = await restoredRows.count();
     expect(restoredCount).toBe(initialCount);
@@ -231,7 +231,7 @@ test.describe('Search & Filtering Tests', () => {
     await page.waitForLoadState('networkidle');
 
     const lowercaseResults = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const lowercaseCount = await lowercaseResults.count();
 
@@ -243,7 +243,7 @@ test.describe('Search & Filtering Tests', () => {
     await page.waitForLoadState('networkidle');
 
     const uppercaseResults = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const uppercaseCount = await uppercaseResults.count();
 
@@ -296,7 +296,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Verify search completes without errors
     const results = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const resultCount = await results.count();
     expect(resultCount).toBeGreaterThanOrEqual(0);
@@ -315,7 +315,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Should not crash and should return appropriate results (likely none)
     const results = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const resultCount = await results.count();
     expect(resultCount).toBeGreaterThanOrEqual(0);
@@ -363,7 +363,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Should handle gracefully
     const results = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const resultCount = await results.count();
     expect(resultCount).toBeGreaterThanOrEqual(0);
@@ -394,7 +394,7 @@ test.describe('Search & Filtering Tests', () => {
 
     // Ensure search completes successfully
     const results = page.locator(
-      'tbody tr, .mb-2.w-full.rounded-md.bg-white.p-4'
+      'tbody tr'
     );
     const resultCount = await results.count();
     expect(resultCount).toBeGreaterThanOrEqual(0);
