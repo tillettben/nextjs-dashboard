@@ -15,6 +15,11 @@ export type State = {
     status?: string[];
   };
   message?: string | null;
+  formData?: {
+    customerId?: string;
+    amount?: string;
+    status?: string;
+  };
 };
 
 const sql = postgres(process.env.POSTGRES_URL!, {
@@ -41,16 +46,19 @@ const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function createInvoice(prevState: State, formData: FormData) {
-  const validatedFields = CreateInvoice.safeParse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
+  const rawFormData = {
+    customerId: formData.get('customerId') as string,
+    amount: formData.get('amount') as string,
+    status: formData.get('status') as string,
+  };
+
+  const validatedFields = CreateInvoice.safeParse(rawFormData);
 
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Create Invoice.',
+      formData: rawFormData,
     };
   }
 

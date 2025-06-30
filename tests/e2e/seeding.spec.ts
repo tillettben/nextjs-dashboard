@@ -42,7 +42,10 @@ test.describe('Database Seeding Tests', () => {
 
     // Verify cards have content (indicating data was seeded)
     const cardValues = cards.locator('p[class*="text-2xl"]');
-    await expect(cardValues.first()).not.toContainText('0');
+    const firstCardText = await cardValues.first().textContent();
+    expect(firstCardText).not.toBe('0');
+    expect(firstCardText).not.toBe('$0');
+    expect(firstCardText).not.toBe('$0.00');
   });
 
   test('should have customers available after seeding', async ({ page }) => {

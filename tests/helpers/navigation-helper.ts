@@ -18,6 +18,7 @@ export class NavigationHelper {
   async goToCustomers() {
     await this.page.click('a[href="/dashboard/customers"]');
     await this.page.waitForURL('/dashboard/customers');
+    await this.page.waitForLoadState('networkidle');
     await expect(this.page.locator('h1')).toContainText('Customers');
   }
 

@@ -23,10 +23,12 @@ test.describe('Customer Management Tests', () => {
     await expect(page.locator('h1')).toContainText('Customers');
     await expect(page).toHaveURL('/dashboard/customers');
 
-    // Verify page description
-    await expect(page.locator('p')).toContainText(
-      'Manage your customer relationships'
-    );
+    // Verify page description (be more specific to avoid multiple matches)
+    await expect(
+      page
+        .locator('p')
+        .filter({ hasText: 'Manage your customer relationships' })
+    ).toBeVisible();
   });
 
   test('should display customer cards with correct information', async ({
@@ -75,10 +77,10 @@ test.describe('Customer Management Tests', () => {
   test('should show customer invoice summaries', async ({ page }) => {
     await page.waitForLoadState('networkidle');
 
-    // Verify invoice summary information is displayed
-    await expect(page.locator('text=Total Invoices')).toBeVisible();
-    await expect(page.locator('text=Total Paid')).toBeVisible();
-    await expect(page.locator('text=Total Pending')).toBeVisible();
+    // Verify invoice summary information is displayed (check first instances)
+    await expect(page.locator('text=Total Invoices').first()).toBeVisible();
+    await expect(page.locator('text=Total Paid').first()).toBeVisible();
+    await expect(page.locator('text=Total Pending').first()).toBeVisible();
 
     // Verify numeric values are shown
     const invoiceCount = page.locator('text=/\\d+/').first();
@@ -242,11 +244,19 @@ test.describe('Customer Management Tests', () => {
     await navigationHelper.goToInvoices();
     await page.waitForLoadState('networkidle');
 
-    // Click on a customer link in the invoice table
-    const customerLink = page
-      .locator('a[href*="/dashboard/customers/"]')
-      .first();
-    await customerLink.click();
+    // Wait for table to load and find visible customer links
+    await page.waitForSelector('tbody tr', { timeout: 10000 });
+
+    // Find the first table row and look for customer link within it
+    const firstRow = page.locator('tbody tr').first();
+    const customerLink = firstRow.locator('a[href*="/dashboard/customers/"]');
+
+    // Ensure the link is visible and scrolled into view
+    await customerLink.scrollIntoViewIfNeeded();
+    await expect(customerLink).toBeVisible();
+
+    // Click the customer link
+    await customerLink.click({ force: true });
 
     // Should navigate to customer detail page
     await expect(page).toHaveURL(/\/dashboard\/customers\/[a-f0-9-]+/);

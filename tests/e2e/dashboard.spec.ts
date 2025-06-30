@@ -56,14 +56,16 @@ test.describe('Dashboard Overview Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Look for revenue chart section
-    const revenueChart = page.locator('text=Revenue').first();
+    const revenueChart = page.locator('text=Recent Revenue').first();
     await expect(revenueChart).toBeVisible();
 
-    // Verify chart container is present
-    const chartContainer = page
-      .locator('[class*="chart"], [class*="revenue"]')
-      .first();
+    // Verify chart container is present (the main chart wrapper)
+    const chartContainer = page.locator('.w-full.md\\:col-span-4').first();
     await expect(chartContainer).toBeVisible();
+
+    // Verify the chart background container
+    const chartBackground = page.locator('.rounded-xl.bg-gray-50.p-4');
+    await expect(chartBackground.first()).toBeVisible();
   });
 
   test('should display latest invoices section', async ({ page }) => {
@@ -78,8 +80,10 @@ test.describe('Dashboard Overview Tests', () => {
     );
     await expect(invoiceItems.first()).toBeVisible();
 
-    // Verify invoice data elements (customer images, names, amounts)
-    await expect(page.locator('img[alt*="profile picture"]')).toBeVisible();
+    // Verify invoice data elements (customer images, names, amounts) - check first instance
+    await expect(
+      page.locator('img[alt*="profile picture"]').first()
+    ).toBeVisible();
   });
 
   test('should show correct currency formatting in latest invoices', async ({

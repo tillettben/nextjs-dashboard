@@ -18,16 +18,7 @@ const sql = postgres(process.env.POSTGRES_URL!, {
 
 export async function fetchRevenue() {
   try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
-
-    console.log('Fetching revenue data...');
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
     const data = await sql<Revenue[]>`SELECT * FROM revenue`;
-
-    console.log('Data fetch completed after 3 seconds.');
-
     return data;
   } catch (error) {
     console.error('Database Error:', error);
@@ -37,10 +28,6 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   try {
-    console.log('Fetching latest invoices...');
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Latest invoices fetched after 2 seconds.');
-
     const data = await sql<LatestInvoiceRaw[]>`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
       FROM invoices
@@ -61,13 +48,6 @@ export async function fetchLatestInvoices() {
 
 export async function fetchCardData() {
   try {
-    // You can probably combine these into a single SQL query
-    // However, we are intentionally splitting them to demonstrate
-    // how to initialize multiple queries in parallel with JS.
-    console.log('Fetching card data...');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Card data fetched after 1 seconds.');
-
     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
     const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
     const invoiceStatusPromise = sql`SELECT
@@ -158,6 +138,13 @@ export async function fetchInvoicesPages(query: string) {
 
 export async function fetchInvoiceById(id: string) {
   try {
+    // Check if id is a valid UUID format
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return null;
+    }
+
     const data = await sql<InvoiceForm[]>`
       SELECT
         invoices.id,
@@ -174,10 +161,10 @@ export async function fetchInvoiceById(id: string) {
       amount: invoice.amount / 100,
     }));
 
-    return invoice[0];
+    return invoice[0] || null;
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to fetch invoice.');
+    return null;
   }
 }
 
@@ -234,6 +221,13 @@ export async function fetchFilteredCustomers(query: string) {
 
 export async function fetchCustomerById(id: string) {
   try {
+    // Check if id is a valid UUID format
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return null;
+    }
+
     const data = await sql<CustomersTableType[]>`
       SELECT
         customers.id,
@@ -255,9 +249,9 @@ export async function fetchCustomerById(id: string) {
       total_paid: formatCurrency(customer.total_paid),
     }));
 
-    return customer[0];
+    return customer[0] || null;
   } catch (err) {
     console.error('Database Error:', err);
-    throw new Error('Failed to fetch customer.');
+    return null;
   }
 }

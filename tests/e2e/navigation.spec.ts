@@ -128,8 +128,8 @@ test.describe('Navigation & Layout Tests', () => {
     // Click sign out
     await signOutButton.click();
 
-    // Should redirect to login
-    await expect(page).toHaveURL(/\/login/);
+    // Should redirect to login (no callback URL on direct logout)
+    await expect(page).toHaveURL('/login');
   });
 
   test('should handle deep linking and direct URL access', async ({ page }) => {

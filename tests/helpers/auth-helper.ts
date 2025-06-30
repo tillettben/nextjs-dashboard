@@ -12,7 +12,8 @@ export class AuthHelper {
     await this.page.fill('input[name="email"]', email);
     await this.page.fill('input[name="password"]', password);
     await this.page.click('button:has-text("Log in")');
-    await this.page.waitForURL('/dashboard', { timeout: 10000 });
+    // Be more flexible with dashboard redirect (might have callback URLs)
+    await this.page.waitForURL(/\/dashboard/, { timeout: 10000 });
     await this.page.waitForLoadState('networkidle');
   }
 
@@ -23,7 +24,8 @@ export class AuthHelper {
   async logout() {
     // Look for logout button in sidenav
     await this.page.click('button:has-text("Sign Out")');
-    await this.page.waitForURL('/login', { timeout: 10000 });
+    // Wait for '/login' (with possible query parameters)
+    await this.page.waitForURL(/\/login/, { timeout: 10000 });
     await this.page.waitForLoadState('networkidle');
   }
 
@@ -43,12 +45,15 @@ export class AuthHelper {
   async ensureLoggedOut() {
     try {
       await this.page.goto('/dashboard');
+      await this.page.waitForLoadState('networkidle');
       const url = this.page.url();
       if (!url.includes('/login')) {
         await this.logout();
       }
     } catch {
-      // Already logged out
+      // Already logged out or error occurred
+      await this.page.goto('/login');
+      await this.page.waitForLoadState('networkidle');
     }
   }
 }

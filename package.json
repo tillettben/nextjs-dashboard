@@ -11,7 +11,7 @@
     "test:debug": "playwright test --debug",
     "test:customer": "playwright test customer-navigation",
     "test:responsive": "playwright test customer-responsive",
-    "test:simple": "playwright test simple-test"
+    "test:smoke": "playwright test .e2e/smoke-test"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -46,7 +46,8 @@
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
     "eslint": "^9.30.0",
-    "eslint-config-next": "15.3.4"
+    "eslint-config-next": "15.3.4",
+    "tsx": "^4.20.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

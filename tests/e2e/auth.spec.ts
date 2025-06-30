@@ -81,7 +81,8 @@ test.describe('Authentication Tests', () => {
 
     for (const route of protectedRoutes) {
       await page.goto(route);
-      await expect(page).toHaveURL(/\/login/);
+      // NextAuth redirects to login with callback URL parameters
+      await expect(page).toHaveURL(/\/login(\?.*)?$/);
     }
   });
 

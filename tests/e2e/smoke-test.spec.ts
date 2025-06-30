@@ -1,6 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { AuthHelper } from '../helpers/auth-helper';
+import { DataHelper } from '../helpers/data-helper';
 
 test.describe('Basic Application Tests', () => {
+  let authHelper: AuthHelper;
+  let dataHelper: DataHelper;
+
+  test.beforeEach(async ({ page }) => {
+    authHelper = new AuthHelper(page);
+    dataHelper = new DataHelper(page);
+    await dataHelper.setupTestEnvironment();
+  });
   test('should load login page and navigate to dashboard', async ({ page }) => {
     // Navigate to login page
     await page.goto('/login');
@@ -22,12 +32,8 @@ test.describe('Basic Application Tests', () => {
   });
 
   test('should navigate to customers page', async ({ page }) => {
-    // Login first
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'test@nextmail.com');
-    await page.fill('input[name="password"]', '123456');
-    await page.click('button:has-text("Log in")');
-    await page.waitForURL('/dashboard');
+    // Login using helper
+    await authHelper.login();
 
     // Navigate to customers
     await page.click('text=Customers');
@@ -36,12 +42,8 @@ test.describe('Basic Application Tests', () => {
   });
 
   test('should have customer cards with links', async ({ page }) => {
-    // Login
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'test@nextmail.com');
-    await page.fill('input[name="password"]', '123456');
-    await page.click('button:has-text("Log in")');
-    await page.waitForURL('/dashboard');
+    // Login using helper
+    await authHelper.login();
 
     // Navigate to customers
     await page.goto('/dashboard/customers');
