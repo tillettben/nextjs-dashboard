@@ -13,16 +13,25 @@ export const dynamic = 'force-dynamic';
 
 export default async function Page() {
   return (
-    <main>
-      <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
+    <main data-testid='dashboard-main'>
+      <h1
+        className={`${lusitana.className} mb-4 text-xl md:text-2xl`}
+        data-testid='dashboard-title'
+      >
         Dashboard
       </h1>
-      <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4'>
+      <div
+        className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4'
+        data-testid='summary-cards-container'
+      >
         <Suspense fallback={<CardsSkeleton />}>
           <CardWrapper />
         </Suspense>
       </div>
-      <div className='mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8'>
+      <div
+        className='mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8'
+        data-testid='dashboard-charts-container'
+      >
         <Suspense fallback={<RevenueChartSkeleton />}>
           <RevenueChart />
         </Suspense>

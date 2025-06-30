@@ -21,12 +21,14 @@ test.describe('Dashboard Overview Tests', () => {
   test('should load dashboard with correct title and layout', async ({
     page,
   }) => {
-    await expect(page.locator('h1')).toContainText('Dashboard');
+    await expect(page.getByTestId('dashboard-title')).toContainText(
+      'Dashboard'
+    );
     await expect(page).toHaveTitle(/Dashboard/);
 
     // Verify main layout sections are present
     await expect(page.locator('a[href="/dashboard"]')).toBeVisible(); // Sidebar navigation
-    await expect(page.locator('main')).toBeVisible(); // Main content
+    await expect(page.getByTestId('dashboard-main')).toBeVisible(); // Main content
   });
 
   test('should display summary cards with correct data', async ({ page }) => {
@@ -34,19 +36,31 @@ test.describe('Dashboard Overview Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify all 4 summary cards are present
-    const cards = page.locator('.rounded-xl.bg-gray-50.p-2.shadow-sm');
-    await expect(cards).toHaveCount(4);
+    await expect(page.getByTestId('card-collected')).toBeVisible();
+    await expect(page.getByTestId('card-pending')).toBeVisible();
+    await expect(page.getByTestId('card-invoices')).toBeVisible();
+    await expect(page.getByTestId('card-customers')).toBeVisible();
 
     // Verify card titles
-    await expect(page.locator('text=Collected')).toBeVisible();
-    await expect(page.locator('text=Pending')).toBeVisible();
-    await expect(page.locator('text=Total Invoices')).toBeVisible();
-    await expect(page.locator('text=Total Customers')).toBeVisible();
+    await expect(page.getByTestId('card-collected-title')).toContainText(
+      'Collected'
+    );
+    await expect(page.getByTestId('card-pending-title')).toContainText(
+      'Pending'
+    );
+    await expect(page.getByTestId('card-invoices-title')).toContainText(
+      'Total Invoices'
+    );
+    await expect(page.getByTestId('card-customers-title')).toContainText(
+      'Total Customers'
+    );
 
     // Verify cards have numeric values (not zero or empty)
-    const cardValues = cards.locator('p[class*="text-2xl"]');
-    for (let i = 0; i < 4; i++) {
-      const valueText = await cardValues.nth(i).textContent();
+    const cardTypes = ['collected', 'pending', 'invoices', 'customers'];
+    for (const cardType of cardTypes) {
+      const valueText = await page
+        .getByTestId(`card-${cardType}-value`)
+        .textContent();
       expect(valueText).toBeTruthy();
       expect(valueText).not.toBe('0');
     }
@@ -55,35 +69,36 @@ test.describe('Dashboard Overview Tests', () => {
   test('should display revenue chart with data', async ({ page }) => {
     await page.waitForLoadState('networkidle');
 
-    // Look for revenue chart section
-    const revenueChart = page.locator('text=Recent Revenue').first();
-    await expect(revenueChart).toBeVisible();
-
-    // Verify chart container is present (the main chart wrapper)
-    const chartContainer = page.locator('.w-full.md\\:col-span-4').first();
-    await expect(chartContainer).toBeVisible();
-
-    // Verify the chart background container
-    const chartBackground = page.locator('.rounded-xl.bg-gray-50.p-4');
-    await expect(chartBackground.first()).toBeVisible();
+    // Verify revenue chart section
+    await expect(page.getByTestId('revenue-chart-title')).toContainText(
+      'Recent Revenue'
+    );
+    await expect(page.getByTestId('revenue-chart-container')).toBeVisible();
+    await expect(page.getByTestId('revenue-chart-background')).toBeVisible();
+    await expect(page.getByTestId('revenue-chart-grid')).toBeVisible();
   });
 
   test('should display latest invoices section', async ({ page }) => {
     await page.waitForLoadState('networkidle');
 
     // Verify latest invoices section
-    await expect(page.locator('text=Latest Invoices')).toBeVisible();
-
-    // Verify invoice items are present
-    const invoiceItems = page.locator(
-      '.flex.flex-row.items-center.justify-between'
+    await expect(page.getByTestId('latest-invoices-title')).toContainText(
+      'Latest Invoices'
     );
-    await expect(invoiceItems.first()).toBeVisible();
+    await expect(page.getByTestId('latest-invoices-container')).toBeVisible();
+    await expect(page.getByTestId('latest-invoices-list')).toBeVisible();
+
+    // Verify at least one invoice item is present
+    const firstInvoiceItem = page
+      .locator('[data-testid^="invoice-item-"]')
+      .first();
+    await expect(firstInvoiceItem).toBeVisible();
 
     // Verify invoice data elements (customer images, names, amounts) - check first instance
-    await expect(
-      page.locator('img[alt*="profile picture"]').first()
-    ).toBeVisible();
+    const firstCustomerAvatar = page
+      .locator('[data-testid^="customer-avatar-"]')
+      .first();
+    await expect(firstCustomerAvatar).toBeVisible();
   });
 
   test('should show correct currency formatting in latest invoices', async ({
@@ -92,13 +107,13 @@ test.describe('Dashboard Overview Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Check for currency symbols in latest invoices
-    const latestInvoicesSection = page
-      .locator('text=Latest Invoices')
-      .locator('..');
-    const amounts = latestInvoicesSection.locator('p[class*="font-medium"]');
+    const firstInvoiceAmount = page
+      .locator('[data-testid^="invoice-amount-"]')
+      .first();
+    await expect(firstInvoiceAmount).toBeVisible();
 
     // Verify at least one amount contains currency formatting
-    const firstAmount = await amounts.first().textContent();
+    const firstAmount = await firstInvoiceAmount.textContent();
     expect(firstAmount).toMatch(/\$[\d,]+\.\d{2}/); // Matches $XX.XX format
   });
 
@@ -108,12 +123,13 @@ test.describe('Dashboard Overview Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify customer profile images are loaded
-    const profileImages = page.locator('img[alt*="profile picture"]');
-    await expect(profileImages.first()).toBeVisible();
+    const firstCustomerAvatar = page
+      .locator('[data-testid^="customer-avatar-"]')
+      .first();
+    await expect(firstCustomerAvatar).toBeVisible();
 
     // Verify images have proper alt text
-    const firstImage = profileImages.first();
-    const altText = await firstImage.getAttribute('alt');
+    const altText = await firstCustomerAvatar.getAttribute('alt');
     expect(altText).toContain('profile picture');
   });
 
@@ -123,9 +139,7 @@ test.describe('Dashboard Overview Tests', () => {
     // Get initial dashboard data
     await page.waitForLoadState('networkidle');
     const initialCardValue = await page
-      .locator('.rounded-xl.bg-gray-50.p-2.shadow-sm')
-      .first()
-      .locator('p[class*="text-2xl"]')
+      .getByTestId('card-collected-value')
       .textContent();
 
     // Navigate away to invoices
@@ -137,9 +151,7 @@ test.describe('Dashboard Overview Tests', () => {
 
     // Verify data is still present (should be the same since no changes made)
     const returnedCardValue = await page
-      .locator('.rounded-xl.bg-gray-50.p-2.shadow-sm')
-      .first()
-      .locator('p[class*="text-2xl"]')
+      .getByTestId('card-collected-value')
       .textContent();
     expect(returnedCardValue).toBe(initialCardValue);
   });
@@ -149,8 +161,10 @@ test.describe('Dashboard Overview Tests', () => {
   }) => {
     await page.waitForLoadState('networkidle');
 
-    // Look for the "Updated just now" or similar timestamp
-    await expect(page.locator('text=Updated just now')).toBeVisible();
+    // Look for the "Updated just now" timestamp
+    await expect(page.getByTestId('latest-invoices-updated')).toContainText(
+      'Updated just now'
+    );
   });
 
   test('should handle empty state gracefully when no data', async ({
@@ -161,25 +175,33 @@ test.describe('Dashboard Overview Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify that even with data, the dashboard structure is proper
-    const cards = page.locator('.rounded-xl.bg-gray-50.p-2.shadow-sm');
-    await expect(cards).toHaveCount(4);
+    await expect(page.getByTestId('card-collected')).toBeVisible();
+    await expect(page.getByTestId('card-pending')).toBeVisible();
+    await expect(page.getByTestId('card-invoices')).toBeVisible();
+    await expect(page.getByTestId('card-customers')).toBeVisible();
 
     // All cards should have titles even if values are zero
-    await expect(page.locator('text=Collected')).toBeVisible();
-    await expect(page.locator('text=Pending')).toBeVisible();
-    await expect(page.locator('text=Total Invoices')).toBeVisible();
-    await expect(page.locator('text=Total Customers')).toBeVisible();
+    await expect(page.getByTestId('card-collected-title')).toContainText(
+      'Collected'
+    );
+    await expect(page.getByTestId('card-pending-title')).toContainText(
+      'Pending'
+    );
+    await expect(page.getByTestId('card-invoices-title')).toContainText(
+      'Total Invoices'
+    );
+    await expect(page.getByTestId('card-customers-title')).toContainText(
+      'Total Customers'
+    );
   });
 
   test('should display icons in summary cards', async ({ page }) => {
     await page.waitForLoadState('networkidle');
 
     // Verify icons are present in summary cards
-    const cards = page.locator('.rounded-xl.bg-gray-50.p-2.shadow-sm');
-
-    // Each card should have an icon
-    for (let i = 0; i < 4; i++) {
-      const cardIcon = cards.nth(i).locator('svg, .h-5.w-5');
+    const cardTypes = ['collected', 'pending', 'invoices', 'customers'];
+    for (const cardType of cardTypes) {
+      const cardIcon = page.getByTestId(`card-${cardType}-icon`);
       await expect(cardIcon).toBeVisible();
     }
   });
