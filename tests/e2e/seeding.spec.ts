@@ -21,7 +21,7 @@ test.describe('Database Seeding Tests', () => {
 
     const responseBody = await response.json();
     expect(responseBody).toHaveProperty('message');
-    expect(responseBody.message).toContain('Database seeded successfully');
+    expect(responseBody.message).toContain('Test database seeded successfully');
   });
 
   test('should be able to access seeded data through application', async ({

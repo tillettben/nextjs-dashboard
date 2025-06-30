@@ -8,10 +8,12 @@ export class AuthHelper {
     password: string = '123456'
   ) {
     await this.page.goto('/login');
+    await this.page.waitForLoadState('networkidle');
     await this.page.fill('input[name="email"]', email);
     await this.page.fill('input[name="password"]', password);
     await this.page.click('button:has-text("Log in")');
-    await this.page.waitForURL('/dashboard');
+    await this.page.waitForURL('/dashboard', { timeout: 10000 });
+    await this.page.waitForLoadState('networkidle');
   }
 
   async loginAsAdmin() {
@@ -21,7 +23,8 @@ export class AuthHelper {
   async logout() {
     // Look for logout button in sidenav
     await this.page.click('button:has-text("Sign Out")');
-    await this.page.waitForURL('/login');
+    await this.page.waitForURL('/login', { timeout: 10000 });
+    await this.page.waitForLoadState('networkidle');
   }
 
   async ensureLoggedIn() {

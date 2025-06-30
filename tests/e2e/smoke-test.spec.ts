@@ -10,7 +10,7 @@ test.describe('Basic Application Tests', () => {
     await expect(page.locator('h1')).toContainText('Please log in to continue');
 
     // Fill in credentials
-    await page.fill('input[name="email"]', 'user@nextmail.com');
+    await page.fill('input[name="email"]', 'test@nextmail.com');
     await page.fill('input[name="password"]', '123456');
 
     // Click login button
@@ -24,7 +24,7 @@ test.describe('Basic Application Tests', () => {
   test('should navigate to customers page', async ({ page }) => {
     // Login first
     await page.goto('/login');
-    await page.fill('input[name="email"]', 'user@nextmail.com');
+    await page.fill('input[name="email"]', 'test@nextmail.com');
     await page.fill('input[name="password"]', '123456');
     await page.click('button:has-text("Log in")');
     await page.waitForURL('/dashboard');
@@ -38,7 +38,7 @@ test.describe('Basic Application Tests', () => {
   test('should have customer cards with links', async ({ page }) => {
     // Login
     await page.goto('/login');
-    await page.fill('input[name="email"]', 'user@nextmail.com');
+    await page.fill('input[name="email"]', 'test@nextmail.com');
     await page.fill('input[name="password"]', '123456');
     await page.click('button:has-text("Log in")');
     await page.waitForURL('/dashboard');

@@ -4,8 +4,8 @@ export class DataHelper {
   constructor(private page: Page) {}
 
   async seedTestData() {
-    // Call the seeding endpoint to populate test data
-    const response = await this.page.request.get('/api/seed');
+    // Call the test seeding endpoint to populate test data with hashed passwords
+    const response = await this.page.request.get('/api/test-seed');
     return response;
   }
 

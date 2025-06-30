@@ -44,7 +44,7 @@ test.describe('Search & Filtering Tests', () => {
 
     if (filteredCount > 0) {
       // Verify filtered results contain the search term
-      await expect(page.locator('text=John')).toBeVisible();
+      await expect(page.locator('text=John').first()).toBeVisible();
     }
 
     // Filtered count should be less than or equal to initial count
@@ -92,7 +92,7 @@ test.describe('Search & Filtering Tests', () => {
 
     if (resultCount > 0) {
       // Should find results containing "Doe"
-      await expect(page.locator('text=Doe')).toBeVisible();
+      await expect(page.locator('text=Doe').first()).toBeVisible();
     }
   });
 

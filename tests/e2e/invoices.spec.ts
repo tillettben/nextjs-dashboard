@@ -140,7 +140,7 @@ test.describe('Invoice Management Tests', () => {
     // Verify create form elements
     await expect(page.locator('select[name="customerId"]')).toBeVisible();
     await expect(page.locator('input[name="amount"]')).toBeVisible();
-    await expect(page.locator('input[name="status"]')).toBeVisible();
+    await expect(page.locator('input[name="status"]').first()).toBeVisible();
     await expect(
       page.locator('button:has-text("Create Invoice")')
     ).toBeVisible();
@@ -198,7 +198,7 @@ test.describe('Invoice Management Tests', () => {
 
     // Verify the new invoice appears in the list
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=$250.00')).toBeVisible();
+    await expect(page.locator('text=$250.00').first()).toBeVisible();
   });
 
   test('should validate required fields in create form', async ({ page }) => {
