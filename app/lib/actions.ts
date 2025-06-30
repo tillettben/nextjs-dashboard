@@ -17,7 +17,7 @@ export type State = {
   message?: string | null;
 };
 
-const sql = postgres(process.env.POSTGRES_URL!, { 
+const sql = postgres(process.env.POSTGRES_URL!, {
   ssl: 'require',
   connect_timeout: 10,
   idle_timeout: 20,
