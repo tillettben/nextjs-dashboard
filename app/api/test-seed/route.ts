@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt';
-import postgres from 'postgres';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { db } from '../../../drizzle/db';
+import { users, customers, invoices, revenue } from '../../../drizzle/schema';
+import { sql } from 'drizzle-orm';
 import type { User, Customer, Invoice, Revenue } from '../../lib/definitions';
-
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 // Load test fixtures
 const testUsers: User[] = JSON.parse(
@@ -24,30 +24,25 @@ const testRevenue: Revenue[] = JSON.parse(
 );
 
 async function seedTestUsers() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-  await sql`
-    CREATE TABLE IF NOT EXISTS users (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      password TEXT NOT NULL
-    );
-  `;
-
   // Clear existing users first
-  await sql`DELETE FROM users`;
+  await db.delete(users);
 
   const insertedUsers = await Promise.all(
     testUsers.map(async user => {
       const hashedPassword = await bcrypt.hash(user.password, 10);
-      return sql`
-        INSERT INTO users (id, name, email, password)
-        VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
-        ON CONFLICT (id) DO UPDATE SET
-          name = EXCLUDED.name,
-          email = EXCLUDED.email,
-          password = EXCLUDED.password;
-      `;
+      return db.insert(users).values({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        password: hashedPassword,
+      }).onConflictDoUpdate({
+        target: users.id,
+        set: {
+          name: sql`EXCLUDED.name`,
+          email: sql`EXCLUDED.email`,
+          password: sql`EXCLUDED.password`,
+        },
+      });
     })
   );
 
@@ -55,31 +50,24 @@ async function seedTestUsers() {
 }
 
 async function seedTestCustomers() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS customers (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL,
-      image_url VARCHAR(255) NOT NULL
-    );
-  `;
-
   // Clear existing customers first
-  await sql`DELETE FROM customers`;
+  await db.delete(customers);
 
   const insertedCustomers = await Promise.all(
-    testCustomers.map(
-      customer =>
-        sql`
-        INSERT INTO customers (id, name, email, image_url)
-        VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
-        ON CONFLICT (id) DO UPDATE SET
-          name = EXCLUDED.name,
-          email = EXCLUDED.email,
-          image_url = EXCLUDED.image_url;
-      `
+    testCustomers.map(customer =>
+      db.insert(customers).values({
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        imageUrl: customer.image_url,
+      }).onConflictDoUpdate({
+        target: customers.id,
+        set: {
+          name: sql`EXCLUDED.name`,
+          email: sql`EXCLUDED.email`,
+          imageUrl: sql`EXCLUDED.image_url`,
+        },
+      })
     )
   );
 
@@ -87,33 +75,25 @@ async function seedTestCustomers() {
 }
 
 async function seedTestInvoices() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS invoices (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      customer_id UUID NOT NULL,
-      amount INT NOT NULL,
-      status VARCHAR(255) NOT NULL,
-      date DATE NOT NULL
-    );
-  `;
-
   // Clear existing invoices first
-  await sql`DELETE FROM invoices`;
+  await db.delete(invoices);
 
   const insertedInvoices = await Promise.all(
-    testInvoices.map(
-      invoice =>
-        sql`
-        INSERT INTO invoices (customer_id, amount, status, date)
-        VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
-        ON CONFLICT (id) DO UPDATE SET
-          customer_id = EXCLUDED.customer_id,
-          amount = EXCLUDED.amount,
-          status = EXCLUDED.status,
-          date = EXCLUDED.date;
-      `
+    testInvoices.map(invoice =>
+      db.insert(invoices).values({
+        customerId: invoice.customer_id,
+        amount: invoice.amount,
+        status: invoice.status,
+        date: invoice.date,
+      }).onConflictDoUpdate({
+        target: invoices.id,
+        set: {
+          customerId: sql`EXCLUDED.customer_id`,
+          amount: sql`EXCLUDED.amount`,
+          status: sql`EXCLUDED.status`,
+          date: sql`EXCLUDED.date`,
+        },
+      })
     )
   );
 
@@ -121,25 +101,20 @@ async function seedTestInvoices() {
 }
 
 async function seedTestRevenue() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS revenue (
-      month VARCHAR(4) NOT NULL UNIQUE,
-      revenue INT NOT NULL
-    );
-  `;
-
   // Clear existing revenue first
-  await sql`DELETE FROM revenue`;
+  await db.delete(revenue);
 
   const insertedRevenue = await Promise.all(
-    testRevenue.map(
-      rev =>
-        sql`
-        INSERT INTO revenue (month, revenue)
-        VALUES (${rev.month}, ${rev.revenue})
-        ON CONFLICT (month) DO UPDATE SET
-          revenue = EXCLUDED.revenue;
-      `
+    testRevenue.map(rev =>
+      db.insert(revenue).values({
+        month: rev.month,
+        revenue: rev.revenue,
+      }).onConflictDoUpdate({
+        target: revenue.month,
+        set: {
+          revenue: sql`EXCLUDED.revenue`,
+        },
+      })
     )
   );
 
@@ -150,7 +125,7 @@ export async function GET() {
   try {
     console.log('Starting test database seeding...');
 
-    await sql.begin(() => [
+    await Promise.all([
       seedTestUsers(),
       seedTestCustomers(),
       seedTestInvoices(),
