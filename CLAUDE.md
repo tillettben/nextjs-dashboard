@@ -11,6 +11,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Type checking**: `pnpm type-check`
 - **Testing**: `pnpm test`
 
+### Database Commands (Drizzle ORM)
+- **Generate migrations**: `pnpm db:generate`
+- **Run migrations**: `pnpm db:migrate`
+- **Push schema changes**: `pnpm db:push`
+- **Open Drizzle Studio**: `pnpm db:studio`
+- **Seed database**: `pnpm db:seed`
+
 you also have a playwright mcp server you can use the view the app in the browser
 
 This project uses pnpm as the package manager. All commands should use pnpm instead of npm.
@@ -49,6 +56,7 @@ You have 3 modes of operation:
    - Run `pnpm type-check` - if failing, ask what to do next
    - If all pass, ask user to commit changes
    - Rename plan file to `COMPLETE-original-plan-name.md`
+   - Update Claude.md Project Architecture section to reflect changes
 
 ## Next.js 15 Specific Rules
 
@@ -129,10 +137,13 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 ### Key Architectural Components
 
 **Database Layer**:
-- Uses PostgreSQL with the `postgres` npm package for direct SQL queries
+- Uses PostgreSQL with Drizzle ORM for type-safe database operations
 - Database connection configured via `POSTGRES_URL` environment variable with SSL required
-- All database operations are in `app/lib/data.ts` and `app/lib/actions.ts`
-- Type definitions for all data models are in `app/lib/definitions.ts`
+- Schema definitions located in `drizzle/schema/index.ts` with auto-generated TypeScript types
+- Database client setup in `drizzle/db.ts`
+- All database operations use Drizzle queries in `app/lib/data.ts` and `app/lib/actions.ts`
+- Legacy type definitions preserved in `app/lib/definitions.ts` for reference
+- Drizzle configuration in `drizzle.config.ts`
 
 **Authentication System**:
 - NextAuth.js v5 (beta) with credentials provider
@@ -164,7 +175,7 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 
 **Search & Filtering**:
 - URL-based search parameters for pagination and filtering
-- Server-side filtering with SQL ILIKE queries
+- Server-side filtering with Drizzle's `ilike()` and `or()` operators
 - Debounced search input with `use-debounce`
 
 **Error Handling**:
@@ -231,6 +242,7 @@ Here are the libraries we are using:
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.44.2",
     "i": "^0.3.7",
     "lint": "^0.8.19",
     "next": "latest",
@@ -249,6 +261,7 @@ Here are the libraries we are using:
     "@types/node": "22.10.7",
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^9.30.0",
     "eslint-config-next": "15.3.4"
   },
@@ -307,8 +320,20 @@ Follow these .prettierrc rules:
 - Implement proper error logging and user-friendly error messages.
 
 ## Backend and Database
-- Uses PostgreSQL with the postgres npm package for direct SQL queries
-- Use Zod schemas to validate data exchanged with the backend.
+- Uses PostgreSQL with Drizzle ORM for type-safe database operations
+- Schema-first approach with auto-generated TypeScript types
+- Use Zod schemas to validate data exchanged with the backend
+
+### Drizzle ORM Guidelines
+- **Schema Definition**: All database schemas are defined in `drizzle/schema/index.ts`
+- **Database Client**: Import `db` from `drizzle/db.ts` for all database operations
+- **Query Building**: Use Drizzle's query builder methods (`select()`, `insert()`, `update()`, `delete()`)
+- **Type Safety**: Leverage auto-generated types (`User`, `Customer`, `Invoice`, `Revenue`)
+- **Relationships**: Use `innerJoin()` and `leftJoin()` for table relationships
+- **Filtering**: Use `eq()`, `ilike()`, `or()`, `and()` operators from `drizzle-orm`
+- **Conflict Resolution**: Use `onConflictDoNothing()` or `onConflictDoUpdate()` for upserts
+- **Raw SQL**: Use `sql` template literal when complex SQL is needed
+- **Migration**: Use `pnpm db:generate` to create migrations, `pnpm db:push` for development
 
 ## Key Conventions
 
@@ -328,9 +353,11 @@ Follow these .prettierrc rules:
 - `AUTH_SECRET` required for NextAuth.js
 
 **Database Schema**:
-- Tables: users, customers, invoices, revenue
+- Tables: users, customers, invoices, revenue (defined in `drizzle/schema/index.ts`)
 - Invoice amounts stored in cents, converted to dollars in UI
 - Customer images stored as URLs
+- Schema uses PostgreSQL UUID primary keys with auto-generation
+- Foreign key relationships between invoices and customers
 
 **Form Validation**:
 - Server-side validation with Zod schemas

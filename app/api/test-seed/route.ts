@@ -30,19 +30,22 @@ async function seedTestUsers() {
   const insertedUsers = await Promise.all(
     testUsers.map(async user => {
       const hashedPassword = await bcrypt.hash(user.password, 10);
-      return db.insert(users).values({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        password: hashedPassword,
-      }).onConflictDoUpdate({
-        target: users.id,
-        set: {
-          name: sql`EXCLUDED.name`,
-          email: sql`EXCLUDED.email`,
-          password: sql`EXCLUDED.password`,
-        },
-      });
+      return db
+        .insert(users)
+        .values({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          password: hashedPassword,
+        })
+        .onConflictDoUpdate({
+          target: users.id,
+          set: {
+            name: sql`EXCLUDED.name`,
+            email: sql`EXCLUDED.email`,
+            password: sql`EXCLUDED.password`,
+          },
+        });
     })
   );
 
@@ -55,19 +58,22 @@ async function seedTestCustomers() {
 
   const insertedCustomers = await Promise.all(
     testCustomers.map(customer =>
-      db.insert(customers).values({
-        id: customer.id,
-        name: customer.name,
-        email: customer.email,
-        imageUrl: customer.image_url,
-      }).onConflictDoUpdate({
-        target: customers.id,
-        set: {
-          name: sql`EXCLUDED.name`,
-          email: sql`EXCLUDED.email`,
-          imageUrl: sql`EXCLUDED.image_url`,
-        },
-      })
+      db
+        .insert(customers)
+        .values({
+          id: customer.id,
+          name: customer.name,
+          email: customer.email,
+          imageUrl: customer.image_url,
+        })
+        .onConflictDoUpdate({
+          target: customers.id,
+          set: {
+            name: sql`EXCLUDED.name`,
+            email: sql`EXCLUDED.email`,
+            imageUrl: sql`EXCLUDED.image_url`,
+          },
+        })
     )
   );
 
@@ -80,20 +86,23 @@ async function seedTestInvoices() {
 
   const insertedInvoices = await Promise.all(
     testInvoices.map(invoice =>
-      db.insert(invoices).values({
-        customerId: invoice.customer_id,
-        amount: invoice.amount,
-        status: invoice.status,
-        date: invoice.date,
-      }).onConflictDoUpdate({
-        target: invoices.id,
-        set: {
-          customerId: sql`EXCLUDED.customer_id`,
-          amount: sql`EXCLUDED.amount`,
-          status: sql`EXCLUDED.status`,
-          date: sql`EXCLUDED.date`,
-        },
-      })
+      db
+        .insert(invoices)
+        .values({
+          customerId: invoice.customer_id,
+          amount: invoice.amount,
+          status: invoice.status,
+          date: invoice.date,
+        })
+        .onConflictDoUpdate({
+          target: invoices.id,
+          set: {
+            customerId: sql`EXCLUDED.customer_id`,
+            amount: sql`EXCLUDED.amount`,
+            status: sql`EXCLUDED.status`,
+            date: sql`EXCLUDED.date`,
+          },
+        })
     )
   );
 
@@ -106,15 +115,18 @@ async function seedTestRevenue() {
 
   const insertedRevenue = await Promise.all(
     testRevenue.map(rev =>
-      db.insert(revenue).values({
-        month: rev.month,
-        revenue: rev.revenue,
-      }).onConflictDoUpdate({
-        target: revenue.month,
-        set: {
-          revenue: sql`EXCLUDED.revenue`,
-        },
-      })
+      db
+        .insert(revenue)
+        .values({
+          month: rev.month,
+          revenue: rev.revenue,
+        })
+        .onConflictDoUpdate({
+          target: revenue.month,
+          set: {
+            revenue: sql`EXCLUDED.revenue`,
+          },
+        })
     )
   );
 
