@@ -1,9 +1,11 @@
 'use server';
 
 import { z } from 'zod';
-import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { db } from '../../drizzle/db';
+import { invoices } from '../../drizzle/schema';
+import { eq } from 'drizzle-orm';
 
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
@@ -22,12 +24,6 @@ export type State = {
   };
 };
 
-const sql = postgres(process.env.POSTGRES_URL!, {
-  ssl: 'require',
-  connect_timeout: 10,
-  idle_timeout: 20,
-  max_lifetime: 60 * 30,
-});
 const FormSchema = z.object({
   id: z.string(),
   customerId: z.string({
@@ -68,10 +64,12 @@ export async function createInvoice(prevState: State, formData: FormData) {
   const date = new Date().toISOString().split('T')[0];
 
   try {
-    await sql`
-      INSERT INTO invoices (customer_id, amount, status, date)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-  `;
+    await db.insert(invoices).values({
+      customerId,
+      amount: amountInCents,
+      status,
+      date,
+    });
   } catch (error) {
     console.error(error);
     return {
@@ -104,11 +102,14 @@ export async function updateInvoice(
   const amountInCents = amount * 100;
 
   try {
-    await sql`
-      UPDATE invoices
-      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-      WHERE id = ${id}
-    `;
+    await db
+      .update(invoices)
+      .set({
+        customerId,
+        amount: amountInCents,
+        status,
+      })
+      .where(eq(invoices.id, id));
   } catch (error) {
     return { message: 'Database Error: Failed to Update Invoice: ' + error };
   }
@@ -119,10 +120,7 @@ export async function updateInvoice(
 
 export async function deleteInvoice(id: string) {
   try {
-    await sql`
-      DELETE FROM invoices
-      WHERE id = ${id}
-  `;
+    await db.delete(invoices).where(eq(invoices.id, id));
     revalidatePath('/dashboard/invoices');
   } catch (error) {
     console.error(error);

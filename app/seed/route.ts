@@ -1,28 +1,18 @@
 import bcrypt from 'bcrypt';
-import postgres from 'postgres';
-import { invoices, customers, revenue, users } from '../lib/placeholder-data';
-
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+import { db } from '../../drizzle/db';
+import { users, customers, invoices, revenue } from '../../drizzle/schema';
+import { invoices as invoiceData, customers as customerData, revenue as revenueData, users as userData } from '../lib/placeholder-data';
 
 async function seedUsers() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-  await sql`
-    CREATE TABLE IF NOT EXISTS users (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      password TEXT NOT NULL
-    );
-  `;
-
   const insertedUsers = await Promise.all(
-    users.map(async user => {
+    userData.map(async user => {
       const hashedPassword = await bcrypt.hash(user.password, 10);
-      return sql`
-        INSERT INTO users (id, name, email, password)
-        VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
-        ON CONFLICT (id) DO NOTHING;
-      `;
+      return db.insert(users).values({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        password: hashedPassword,
+      }).onConflictDoNothing();
     })
   );
 
@@ -30,25 +20,14 @@ async function seedUsers() {
 }
 
 async function seedInvoices() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS invoices (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      customer_id UUID NOT NULL,
-      amount INT NOT NULL,
-      status VARCHAR(255) NOT NULL,
-      date DATE NOT NULL
-    );
-  `;
-
   const insertedInvoices = await Promise.all(
-    invoices.map(
-      invoice => sql`
-        INSERT INTO invoices (customer_id, amount, status, date)
-        VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
-        ON CONFLICT (id) DO NOTHING;
-      `
+    invoiceData.map(invoice =>
+      db.insert(invoices).values({
+        customerId: invoice.customer_id,
+        amount: invoice.amount,
+        status: invoice.status,
+        date: invoice.date,
+      }).onConflictDoNothing()
     )
   );
 
@@ -56,24 +35,14 @@ async function seedInvoices() {
 }
 
 async function seedCustomers() {
-  await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS customers (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL,
-      image_url VARCHAR(255) NOT NULL
-    );
-  `;
-
   const insertedCustomers = await Promise.all(
-    customers.map(
-      customer => sql`
-        INSERT INTO customers (id, name, email, image_url)
-        VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
-        ON CONFLICT (id) DO NOTHING;
-      `
+    customerData.map(customer =>
+      db.insert(customers).values({
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        imageUrl: customer.image_url,
+      }).onConflictDoNothing()
     )
   );
 
@@ -81,20 +50,12 @@ async function seedCustomers() {
 }
 
 async function seedRevenue() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS revenue (
-      month VARCHAR(4) NOT NULL UNIQUE,
-      revenue INT NOT NULL
-    );
-  `;
-
   const insertedRevenue = await Promise.all(
-    revenue.map(
-      rev => sql`
-        INSERT INTO revenue (month, revenue)
-        VALUES (${rev.month}, ${rev.revenue})
-        ON CONFLICT (month) DO NOTHING;
-      `
+    revenueData.map(rev =>
+      db.insert(revenue).values({
+        month: rev.month,
+        revenue: rev.revenue,
+      }).onConflictDoNothing()
     )
   );
 
@@ -103,7 +64,7 @@ async function seedRevenue() {
 
 export async function GET() {
   try {
-    await sql.begin(() => [
+    await Promise.all([
       seedUsers(),
       seedCustomers(),
       seedInvoices(),

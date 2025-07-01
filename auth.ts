@@ -4,18 +4,13 @@ import { authConfig } from './auth.config';
 import { z } from 'zod';
 import type { User } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
-import postgres from 'postgres';
-
-const sql = postgres(process.env.POSTGRES_URL!, { 
-  ssl: 'require',
-  connect_timeout: 10,
-  idle_timeout: 20,
-  max_lifetime: 60 * 30,
-});
+import { db } from './drizzle/db';
+import { users } from './drizzle/schema';
+import { eq } from 'drizzle-orm';
 
 async function getUser(email: string): Promise<User | undefined> {
   try {
-    const user = await sql<User[]>`SELECT * FROM users WHERE email=${email}`;
+    const user = await db.select().from(users).where(eq(users.email, email));
     return user[0];
   } catch (error) {
     console.error('Failed to fetch user:', error);

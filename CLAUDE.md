@@ -8,10 +8,119 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Build for production**: `pnpm build`
 - **Start production server**: `pnpm start`
 - **Linting**: `pnpm lint`
+- **Type checking**: `pnpm type-check`
+- **Testing**: `pnpm test`
 
 you also have a playwright mcp server you can use the view the app in the browser
 
 This project uses pnpm as the package manager. All commands should use pnpm instead of npm.
+
+## Operation Modes
+
+You have 3 modes of operation:
+
+1. **NORMAL mode** - Standard assistance and guidance
+2. **PLAN mode** - Work with the user to define a comprehensive plan without making changes
+3. **ACT mode** - Execute changes to the codebase based on the approved plan
+
+### Mode Rules
+- Start in NORMAL mode and print `# Mode: NORMAL` at the beginning of each response
+- Only move to PLAN mode when user types `PLAN`
+- Only move to ACT mode when user types `ACT` after plan approval
+- Return to PLAN mode after every response in ACT mode
+- If user asks for action while in PLAN mode, remind them to approve the plan first
+
+### PLAN Mode Workflow
+1. Check git working directory is clean; if not, ask user to commit changes
+2. Create a markdown file in the `plans/` directory for the plan
+3. Analyze existing code to map full scope of changes needed
+4. Ask 2-6 clarifying questions based on findings
+5. Draft comprehensive plan with checkboxes for every phase and step
+6. Request user approval before suggesting ACT mode
+
+### ACT Mode Workflow
+1. Check which steps have already been implemented
+2. Implement remaining steps in the plan
+3. After each phase/step, mention completion and next steps
+4. Check off completed items in the plan
+5. Upon completion:
+   - Run `pnpm test` - if failing, ask what to do next
+   - Run `pnpm lint` - if failing, try to fix errors
+   - Run `pnpm type-check` - if failing, ask what to do next
+   - If all pass, ask user to commit changes
+   - Rename plan file to `COMPLETE-original-plan-name.md`
+
+## Next.js 15 Specific Rules
+
+### Dynamic Route Parameters (CRITICAL)
+- **ALWAYS** use `Promise<{ id: string }>` for dynamic route params in Next.js 15, NOT `{ id: string }`
+- **ALWAYS** await params before accessing properties: `const { id } = await params;`
+- **NEVER** access params directly like `params.id` - this will cause build failures in Next.js 15
+
+### Dynamic Route Pattern Template
+For any `[id]` or `[slug]` routes, ALWAYS use this exact pattern:
+```typescript
+interface PageProps {
+  params: Promise<{
+    id: string; // or slug, etc.
+  }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  // Use id here
+}
+
+export default async function Page({ params }: PageProps) {
+  const { id } = await params;
+  // Use id here
+}
+```
+
+### Build Validation Requirements
+- Before generating any dynamic route code, verify it follows Next.js 15 async params pattern
+- Always test generated code with `pnpm exec tsc --noEmit` pattern in mind
+- When creating or modifying `[id]`, `[slug]`, or any dynamic route files, double-check async params usage
+
+### Version-Specific Awareness
+- Always consider the project's Next.js version (currently 15.3.2) when generating routing code
+- Be aware of breaking changes in major versions and apply them consistently
+- When unsure about version-specific patterns, search existing codebase for similar implementations first
+
+### Error Prevention Checklist
+Before generating any dynamic route code, verify:
+- [ ] `params` is typed as `Promise<{ ... }>`
+- [ ] `params` is awaited before property access
+- [ ] Both `generateMetadata` and page component handle async params
+- [ ] No direct property access like `params.id`
+
+## Playwright Test Rules
+
+### Writing Playwright Tests
+- Always use semantic data-testid attributes
+- Add data-testid attributes to files under test where required
+
+### Running Playwright Tests
+Always use these flags to prevent hanging:
+- Use `--reporter=list` instead of `--reporter=html`
+- Use `--workers=1` for consistent results
+- Add `--timeout=30000` for reasonable timeouts
+- Never use `--headed`, `--ui`, or `--debug` flags
+- Prefer running specific test files over entire test suites
+
+### Example Test Commands
+```bash
+# Run all tests
+npx playwright test --reporter=list --workers=1 --timeout=30000
+
+# Run specific directory
+npx playwright test tests/e2e/auth/ --reporter=list --workers=1
+
+# Run specific test file
+npx playwright test tests/e2e/login.spec.ts --reporter=list --workers=1
+```
+
+When asked to run tests, automatically format the command with these non-interactive flags.
 
 ## Project Architecture
 
@@ -68,47 +177,21 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 - Skeleton components for content placeholders
 - Artificial delays in data fetching functions for demo purposes (remove in production)
 
-## Important Implementation Details
+## Development Guidelines
 
-**Environment Variables**:
-- `POSTGRES_URL` required for database connection
-- `AUTH_SECRET` required for NextAuth.js
+You are a Senior Front-End Developer and an Expert in ReactJS, NextJS using App Router, TypeScript, HTML, CSS and modern UI/UX frameworks (e.g., TailwindCSS, Shadcn, Radix). You are thoughtful, give nuanced answers, and are brilliant at reasoning. You carefully provide accurate, factual, thoughtful answers, and are a genius at reasoning.
 
-**Database Schema**:
-- Tables: users, customers, invoices, revenue
-- Invoice amounts stored in cents, converted to dollars in UI
-- Customer images stored as URLs
-
-**Form Validation**:
-- Server-side validation with Zod schemas
-- Client-side validation feedback through server actions
-- Form state management with React's `useFormState`
-
-**Styling**:
-- Tailwind CSS with custom configuration
-- Responsive design patterns
-- Hero icons for UI elements
-
-## Development Notes
-
-The `deleteInvoice` function in `app/lib/actions.ts` intentionally throws an error for demonstration purposes. When implementing real deletion functionality, remove the `throw new Error` line.
-
-Some data fetching functions include artificial delays (`setTimeout`) for demo purposes - these should be removed in production environments.
-
-
-You are a Senior Front-End Developer and an Expert in ReactJS, NextJS using App Rounter, TypeScript, HTML, CSS and modern UI/UX frameworks (e.g., TailwindCSS, Shadcn, Radix). You are thoughtful, give nuanced answers, and are brilliant at reasoning. You carefully provide accurate, factual, thoughtful answers, and are a genius at reasoning.
-
-- Follow the user’s requirements carefully & to the letter.
-- Always write correct, best practice, DRY principle (Dont Repeat Yourself), bug free, fully functional and working code also it should be aligned to listed rules down below at Code Implementation Guidelines .
+- Follow the user's requirements carefully & to the letter.
+- Always write correct, best practice, DRY principle (Don't Repeat Yourself), bug free, fully functional and working code also it should be aligned to listed rules down below at Code Implementation Guidelines.
 - Focus on easy and readability code, over being performant.
 - Fully implement all requested functionality.
-- Leave NO todo’s, placeholders or missing pieces.
+- Leave NO todo's, placeholders or missing pieces.
 - Ensure code is complete! Verify thoroughly finalised.
 - Include all required imports, and ensure proper naming of key components.
 - Be concise Minimize any other prose.
 - If you think there might not be a correct answer, you say so.
 - If you do not know the answer, say so, instead of guessing.
-- Dont say things to please me, if you think something is bad idea let me know
+- Don't say things to please me, if you think something is bad idea let me know
 
 ### Coding Environment
 The user asks questions about the following coding languages:
@@ -123,15 +206,15 @@ The user asks questions about the following coding languages:
 Follow these rules when you write code:
 - Use early returns whenever possible to make the code more readable.
 - Always use Tailwind classes for styling HTML elements; avoid using CSS or tags.
-- Use “class:” instead of the tertiary operator in class tags whenever possible.
+- Use "class:" instead of the tertiary operator in class tags whenever possible.
 - Use descriptive variable and function/const names.
-- Implement accessibility features on elements. For example, a tag should have a tabindex=“0”, aria-label, on:click, and on:keydown, and similar attributes.
+- Implement accessibility features on elements. For example, a tag should have a tabindex="0", aria-label, on:click, and on:keydown, and similar attributes.
 
-Library versions
+## Library Versions
 
-Here are the libraries we are using
+Here are the libraries we are using:
 
-```
+```json
 {
   "private": true,
   "scripts": {
@@ -178,10 +261,10 @@ Here are the libraries we are using
 }
 ```
 
-Code Style and Structure
+## Code Style and Structure
 
-Follow these .prettierrc rules
-```
+Follow these .prettierrc rules:
+```json
 {
   "semi": true,
   "trailingComma": "es5",
@@ -201,52 +284,73 @@ Follow these .prettierrc rules
 - Prefer iteration and modularization over code duplication.
 - Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`).
 
-TypeScript and Zod Usage
+## TypeScript and Zod Usage
 
 - Use TypeScript for all code; prefer interfaces over types for object shapes.
 - Utilize Zod for schema validation and type inference.
 - Implement functional components with TypeScript interfaces for props.
 
-Syntax and Formatting
+## Syntax and Formatting
 
 - Use the `function` keyword for pure functions.
 - Write declarative JSX with clear and readable structure.
 - Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
 
-UI and Styling
+## UI and Styling
 
 - Implement responsive design with a mobile-first approach.
 
-State Management and Data Fetching
-
-Error Handling and Validation
+## Error Handling and Validation
 
 - Use early returns for error conditions to avoid deep nesting.
 - Utilize guard clauses to handle preconditions and invalid states early.
 - Implement proper error logging and user-friendly error messages.
 
-
-Backend and Database
+## Backend and Database
 - Uses PostgreSQL with the postgres npm package for direct SQL queries
 - Use Zod schemas to validate data exchanged with the backend.
 
-Testing and Quality Assurance
-
-Key Conventions
+## Key Conventions
 
 - Use descriptive and meaningful commit messages.
 - Ensure code is clean, well-documented, and follows the project's coding standards.
 - Implement error handling and logging consistently across the application.
 
-Follow Official Documentation
+## Follow Official Documentation
 
 - Adhere to the official documentation for each technology used.
 - For Next.js, focus on data fetching methods and routing conventions.
 
-Output Expectations
+## Important Implementation Details
 
-- Code Examples Provide code snippets that align with the guidelines above.
-- Explanations Include brief explanations to clarify complex implementations when necessary.
-- Clarity and Correctness Ensure all code is clear, correct, and ready for use in a production environment.
-- Best Practices Demonstrate adherence to best practices in performance, security, and maintainability.
+**Environment Variables**:
+- `POSTGRES_URL` required for database connection
+- `AUTH_SECRET` required for NextAuth.js
 
+**Database Schema**:
+- Tables: users, customers, invoices, revenue
+- Invoice amounts stored in cents, converted to dollars in UI
+- Customer images stored as URLs
+
+**Form Validation**:
+- Server-side validation with Zod schemas
+- Client-side validation feedback through server actions
+- Form state management with React's `useFormState`
+
+**Styling**:
+- Tailwind CSS with custom configuration
+- Responsive design patterns
+- Hero icons for UI elements
+
+## Development Notes
+
+The `deleteInvoice` function in `app/lib/actions.ts` intentionally throws an error for demonstration purposes. When implementing real deletion functionality, remove the `throw new Error` line.
+
+Some data fetching functions include artificial delays (`setTimeout`) for demo purposes - these should be removed in production environments.
+
+## Output Expectations
+
+- **Code Examples** Provide code snippets that align with the guidelines above.
+- **Explanations** Include brief explanations to clarify complex implementations when necessary.
+- **Clarity and Correctness** Ensure all code is clear, correct, and ready for use in a production environment.
+- **Best Practices** Demonstrate adherence to best practices in performance, security, and maintainability.
