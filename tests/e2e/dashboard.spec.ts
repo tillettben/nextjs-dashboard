@@ -205,4 +205,27 @@ test.describe('Dashboard Overview Tests', () => {
       await expect(cardIcon).toBeVisible();
     }
   });
+
+  test('should navigate to invoice edit page when clicking latest invoice item', async ({
+    page,
+  }) => {
+    // Wait for latest invoices to load
+    await expect(page.getByTestId('latest-invoices-container')).toBeVisible();
+
+    // Click on the first invoice item
+    const firstInvoice = page
+      .getByTestId('latest-invoices-list')
+      .locator('[data-testid^="invoice-item-"]')
+      .first();
+    await expect(firstInvoice).toBeVisible();
+
+    // Get invoice ID from data-testid for URL verification
+    const invoiceId = await firstInvoice.getAttribute('data-testid');
+    const id = invoiceId?.replace('invoice-item-', '');
+
+    await firstInvoice.click();
+
+    // Should navigate to invoice edit page
+    await expect(page).toHaveURL(`/dashboard/invoices/${id}/edit`);
+  });
 });

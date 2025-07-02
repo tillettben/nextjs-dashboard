@@ -1,6 +1,7 @@
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import Image from 'next/image';
+import Link from 'next/link';
 import { lusitana } from '../fonts';
 import { fetchLatestInvoices } from '@/app/lib/data';
 
@@ -23,17 +24,18 @@ export default async function LatestInvoices() {
       >
         <div className='bg-white px-6' data-testid='latest-invoices-list'>
           {latestInvoices.map((invoice, i) => {
-            console.log(invoice);
             return (
-              <div
+              <Link
                 key={invoice.id}
+                href={`/dashboard/invoices/${invoice.id}/edit`}
                 className={clsx(
-                  'flex flex-row items-center justify-between py-4',
+                  'flex flex-row items-center justify-between py-4 transition-colors hover:bg-gray-50 focus:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset',
                   {
                     'border-t': i !== 0,
                   }
                 )}
                 data-testid={`invoice-item-${invoice.id}`}
+                aria-label={`Edit invoice for ${invoice.name} - ${invoice.amount}`}
               >
                 <div
                   className='flex items-center'
@@ -68,7 +70,7 @@ export default async function LatestInvoices() {
                 >
                   {invoice.amount}
                 </p>
-              </div>
+              </Link>
             );
           })}
         </div>

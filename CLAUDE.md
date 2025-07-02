@@ -1,6 +1,7 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+We are only building for desktop so don't need to worry about mobile devices.
 
 ## Development Commands
 
