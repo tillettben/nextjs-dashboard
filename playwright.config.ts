@@ -83,7 +83,7 @@ export default defineConfig({
   webServer: {
     command: 'pnpm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true, // Always reuse existing server
     timeout: 120 * 1000,
     env: {
       // Always use test environment for Playwright tests
