@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'Customers',
 };
 
+// Force dynamic rendering to prevent build-time database access
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
   const customers = await fetchFilteredCustomers('');
 

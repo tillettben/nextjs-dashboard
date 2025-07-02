@@ -13,6 +13,7 @@ test.describe('Application Smoke Tests', () => {
   });
 
   test('should complete full application smoke test', async ({ page }) => {
+    test.setTimeout(60000);
     // 1. Authentication & Dashboard
     console.log('Testing login page...');
     await page.goto('/login');

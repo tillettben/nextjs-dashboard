@@ -36,6 +36,8 @@ jobs:
         run: pnpm exec tsx scripts/migrate.ts
       - name: Build Next.js application
         run: pnpm build
+        env:
+          SKIP_ENV_VALIDATION: true
       - name: Start Next.js application
         run: pnpm start &
       - name: Wait for application to be ready

@@ -45,7 +45,7 @@ You have 3 modes of operation:
 ### PLAN Mode Workflow
 
 1. Check git working directory is clean; if not, ask user to commit changes
-2. Create a markdown file in the `plans/` directory for the plan
+2. Create a markdown file in the `./claude/plans/` directory for the plan
 3. Analyze existing code to map full scope of changes needed
 4. Ask 2-6 clarifying questions based on findings
 5. Draft comprehensive plan with checkboxes for every phase and step
@@ -62,7 +62,8 @@ You have 3 modes of operation:
    - Run `pnpm lint:fix` - if failing, try to fix errors
    - Run `pnpm type-check` - if failing, ask what to do next
    - If all pass, ask user to commit changes
-   - Rename plan file to `COMPLETE-original-plan-name.md`
+   - Rename the plan file to `COMPLETE-original-plan-name.md`
+   - Create an execution file `./claude/executions/original-plan-name.md` and summarize the final implementation
    - Update Claude.md Project Architecture section if there is any relevant an important new information
 
 ### FIX_TESTS Mode workflow

@@ -5,26 +5,30 @@ import * as schema from './schema';
 // Environment-aware database connection
 function getDatabaseUrl(): string {
   const env = process.env.NODE_ENV;
+  
+  // Priority order: explicit env vars, then fallback based on NODE_ENV
+  if (process.env.DATABASE_URL_TEST) {
+    return process.env.DATABASE_URL_TEST;
+  }
+  
+  if (process.env.DATABASE_URL_LOCAL) {
+    return process.env.DATABASE_URL_LOCAL;
+  }
+  
+  if (process.env.POSTGRES_URL) {
+    return process.env.POSTGRES_URL;
+  }
 
   switch (env) {
     case 'test':
-      return (
-        process.env.DATABASE_URL_TEST ||
-        'postgres://dev_user:dev_password@localhost:5433/nextjs_dashboard_test'
-      );
+      return 'postgres://dev_user:dev_password@localhost:5433/nextjs_dashboard_test';
     case 'development':
-      return (
-        process.env.DATABASE_URL_LOCAL ||
-        'postgres://dev_user:dev_password@localhost:5433/nextjs_dashboard'
-      );
+      return 'postgres://dev_user:dev_password@localhost:5433/nextjs_dashboard';
     case 'production':
-      return process.env.POSTGRES_URL!;
+      throw new Error('POSTGRES_URL environment variable is required in production');
     default:
       // Fallback for local development
-      return (
-        process.env.DATABASE_URL_LOCAL ||
-        'postgres://dev_user:dev_password@localhost:5433/nextjs_dashboard'
-      );
+      return 'postgres://dev_user:dev_password@localhost:5433/nextjs_dashboard';
   }
 }
 
