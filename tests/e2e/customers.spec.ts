@@ -37,25 +37,22 @@ test.describe('Customer Management Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify customer cards are present
-    const customerCards = page.locator('.rounded-xl, [class*="Card"]').first();
-    await expect(customerCards).toBeVisible();
+    const customerCards = page.locator('[data-testid="customer-card"]');
+    await expect(customerCards.first()).toBeVisible();
 
-    // Verify customer information elements
-    const hasJohnDoe = await page
-      .locator('text=John Doe')
-      .first()
-      .isVisible()
-      .catch(() => false);
-    const hasJaneSmith = await page
-      .locator('text=Jane Smith')
-      .first()
-      .isVisible()
-      .catch(() => false);
-    expect(hasJohnDoe || hasJaneSmith).toBe(true);
+    // Verify at least one customer card exists
+    const cardCount = await customerCards.count();
+    expect(cardCount).toBeGreaterThan(0);
 
-    // Verify email addresses are shown
-    const emails = page.locator('text=@example.com').first();
-    await expect(emails).toBeVisible();
+    // Verify first customer card has name and email
+    const firstCard = customerCards.first();
+    await expect(firstCard.locator('.font-semibold.text-lg')).toBeVisible();
+
+    // Verify email addresses are shown (with any domain)
+    const emailPattern = page.locator(
+      'text=/[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}/'
+    );
+    await expect(emailPattern.first()).toBeVisible();
   });
 
   test('should display customer profile images correctly', async ({ page }) => {
@@ -107,7 +104,7 @@ test.describe('Customer Management Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Click on the first customer card/link
-    const customerCard = page.locator('.rounded-xl, [class*="Card"]').first();
+    const customerCard = page.locator('[data-testid="customer-card"]').first();
     await customerCard.click();
 
     // Should navigate to customer detail page
@@ -151,33 +148,26 @@ test.describe('Customer Management Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify multiple customers are shown
-    const customerCards = page.locator('.rounded-xl, [class*="Card"]');
+    const customerCards = page.locator('[data-testid="customer-card"]');
     const cardCount = await customerCards.count();
     expect(cardCount).toBeGreaterThan(1);
 
-    // Verify different customer names appear
-    const customerNames = [
-      'John Doe',
-      'Jane Smith',
-      'Robert Johnson',
-      'Alice Brown',
-    ];
-    let foundNames = 0;
+    // Verify different customer names appear by checking for unique content
+    const customerTitles = customerCards.locator('.font-semibold.text-lg');
+    const titleCount = await customerTitles.count();
+    expect(titleCount).toBeGreaterThan(1);
 
-    for (const name of customerNames) {
-      const nameElement = page.locator(`text=${name}`);
-      const isVisible = await nameElement.isVisible().catch(() => false);
-      if (isVisible) foundNames++;
-    }
-
-    expect(foundNames).toBeGreaterThan(0);
+    // Verify each card has different customer data
+    const firstCardName = await customerTitles.first().textContent();
+    const secondCardName = await customerTitles.nth(1).textContent();
+    expect(firstCardName).not.toBe(secondCardName);
   });
 
   test('should show accurate invoice totals per customer', async ({ page }) => {
     await page.waitForLoadState('networkidle');
 
     // Get customer data from first card
-    const firstCard = page.locator('.rounded-xl, [class*="Card"]').first();
+    const firstCard = page.locator('[data-testid="customer-card"]').first();
 
     // Verify total invoices number is present and reasonable
     const totalInvoicesText = await firstCard
@@ -200,7 +190,7 @@ test.describe('Customer Management Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Click on a customer card
-    const customerCard = page.locator('.rounded-xl, [class*="Card"]').first();
+    const customerCard = page.locator('[data-testid="customer-card"]').first();
     await customerCard.click();
 
     // Verify we're on customer detail page
@@ -220,7 +210,7 @@ test.describe('Customer Management Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Click on first customer
-    const customerCard = page.locator('.rounded-xl, [class*="Card"]').first();
+    const customerCard = page.locator('[data-testid="customer-card"]').first();
     await customerCard.click();
 
     await page.waitForLoadState('networkidle');
@@ -267,8 +257,10 @@ test.describe('Customer Management Tests', () => {
   }) => {
     await page.waitForLoadState('networkidle');
 
-    // Verify email format and visibility
-    const emailElements = page.locator('text=@example.com');
+    // Verify email format and visibility (any valid email domain)
+    const emailElements = page.locator(
+      'text=/[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}/'
+    );
     await expect(emailElements.first()).toBeVisible();
 
     // Verify email format is correct
@@ -312,7 +304,7 @@ test.describe('Customer Management Tests', () => {
     await expect(page.locator('h1')).toContainText('Customers');
 
     // Verify customer cards are still displayed
-    const cards = page.locator('.rounded-xl, [class*="Card"]');
+    const cards = page.locator('[data-testid="customer-card"]');
     const cardCount = await cards.count();
     expect(cardCount).toBeGreaterThanOrEqual(0);
 

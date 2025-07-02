@@ -157,10 +157,10 @@ test.describe('Error Handling & Not Found Tests', () => {
 
     for (const url of malformedUrls) {
       try {
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 5000 });
 
         // Wait a bit for content to load
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(500);
 
         // Should not crash the application - check if any content is present
         const hasBody = await page
@@ -177,11 +177,11 @@ test.describe('Error Handling & Not Found Tests', () => {
 
         // Should show some kind of appropriate response
         const hasNotFound = await page
-          .locator('text=Not Found')
+          .locator('[data-testid="not-found-title"], text="404 Not Found"')
           .isVisible()
           .catch(() => false);
         const hasError = await page
-          .locator('text=Error, text=Something went wrong')
+          .locator('text=/Error|Something went wrong/i')
           .isVisible()
           .catch(() => false);
         const hasValidContent = await page

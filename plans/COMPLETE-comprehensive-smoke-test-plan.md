@@ -1,9 +1,11 @@
 # Comprehensive Smoke Test Improvement Plan
 
 ## Overview
+
 Transform the basic smoke test into a comprehensive end-to-end test that quickly validates all critical application functionality and pages are working correctly.
 
 ## Current Issues with Smoke Test
+
 - [ ] Limited coverage (only 3 basic tests)
 - [ ] Only tests login, dashboard overview, and customers page
 - [ ] Missing coverage for invoices functionality
@@ -13,6 +15,7 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 - [ ] No comprehensive navigation flow testing
 
 ## Goals
+
 - [ ] Create one comprehensive smoke test file covering all major pages
 - [ ] Focus on fast page loading verification (not deep functionality)
 - [ ] Use minimal test data setup for speed
@@ -22,18 +25,21 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 - [ ] Keep tests simple, fast, and focused on "does it load correctly"
 
 ## Phase 1: Analysis and Planning
+
 - [ ] Map all application routes and pages
 - [ ] Identify critical smoke test scenarios
 - [ ] Define success criteria for each page
 - [ ] Plan test organization and structure
 
 ## Phase 2: Add Data-TestID Attributes (if needed)
+
 - [x] Review existing data-testid coverage from dashboard improvements
 - [x] Add missing test IDs to form pages and other components
 - [x] Ensure error pages have testable elements
 - [x] Add test IDs to navigation and key UI elements
 
 ## Phase 3: Restructure Smoke Test
+
 - [x] Create comprehensive test structure
 - [x] Implement all page navigation tests
 - [x] Add form page loading verification
@@ -41,6 +47,7 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 - [x] Implement quick functionality checks
 
 ## Phase 4: Validation and Optimization
+
 - [x] Run updated smoke tests (✅ Passed in 13.3 seconds)
 - [x] Optimize for speed while maintaining coverage (✅ Single comprehensive test)
 - [x] Verify robustness and maintainability (✅ TypeScript and ESLint pass)
@@ -52,8 +59,9 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 **Test Performance**: ✅ Completed in 13.3 seconds (under 30-second target)
 
 **Coverage Achieved**:
+
 1. **Authentication Flow** - Login page structure and functionality ✅
-2. **Dashboard Overview** - All summary cards and chart components ✅  
+2. **Dashboard Overview** - All summary cards and chart components ✅
 3. **Main Pages** - Invoices and customers page structure ✅
 4. **Form Pages** - Create invoice form and edit form structure ✅
 5. **Navigation** - All main navigation links working ✅
@@ -61,6 +69,7 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 7. **Resilient Testing** - Graceful handling of navigation issues ✅
 
 ### Key Improvements Made
+
 - **Added 20+ data-testid attributes** across all major components
 - **Single comprehensive test** covering all critical paths
 - **Resilient navigation testing** with graceful fallbacks
@@ -69,8 +78,9 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 - **Viewport optimization** for responsive component testing
 
 ### Components Enhanced with Data-TestID
+
 1. **Login System**: login-page, login-form, login-email, login-password, login-submit
-2. **Navigation**: nav-home, nav-invoices, nav-customers  
+2. **Navigation**: nav-home, nav-invoices, nav-customers
 3. **Dashboard**: All existing dashboard test IDs from previous improvement
 4. **Forms**: create-invoice-form, customer-select, amount-input, edit-invoice-submit
 5. **Tables**: invoices-table, create-invoice-button
@@ -78,6 +88,7 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 7. **Error Pages**: invoice-not-found, customer-not-found, not-found-back-link
 
 ### Test Strategy Benefits
+
 - ✅ **Speed**: Single test completing in under 15 seconds vs multiple slower tests
 - ✅ **Coverage**: Verifies all major application pages and forms load correctly
 - ✅ **Reliability**: Uses semantic data-testid selectors instead of fragile CSS classes
@@ -87,6 +98,7 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 ## Implementation Details
 
 ### Application Routes to Test
+
 1. **Authentication Flow**
    - `/login` - Login page loads and functions
    - Login redirect to dashboard works
@@ -110,12 +122,14 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 ### Smoke Test Scenarios
 
 #### 1. Authentication & Basic Navigation
+
 - [ ] Login page loads correctly
 - [ ] Login with valid credentials works
 - [ ] Dashboard loads after login
 - [ ] Main navigation links are present and clickable
 
-#### 2. Page Loading Verification  
+#### 2. Page Loading Verification
+
 - [ ] Dashboard overview displays essential components
 - [ ] Invoices page loads with table structure
 - [ ] Customers page loads with customer cards
@@ -124,6 +138,7 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 - [ ] Customer detail page loads (using first available customer)
 
 #### 3. Quick Data Verification
+
 - [ ] Dashboard cards are visible (don't check values)
 - [ ] Invoice table structure exists
 - [ ] Customer cards are present
@@ -131,16 +146,18 @@ Transform the basic smoke test into a comprehensive end-to-end test that quickly
 - [ ] Required elements are visible
 
 #### 4. Basic Error Handling
+
 - [ ] 404 page displays for non-existent invoice
 - [ ] Basic error page structure works
 
 ### Test Organization Strategy
+
 ```typescript
 // Single comprehensive smoke test file:
 test.describe('Application Smoke Tests', () => {
   test('should complete full application smoke test', async ({ page }) => {
     // 1. Authentication & Dashboard
-    // 2. Main Pages Loading  
+    // 2. Main Pages Loading
     // 3. Form Pages Loading
     // 4. Basic Error Handling
     // All in one streamlined test for maximum speed
@@ -149,6 +166,7 @@ test.describe('Application Smoke Tests', () => {
 ```
 
 ### Success Criteria for Each Page Type
+
 - **All Pages**: Page loads, correct URL, main heading visible
 - **Dashboard**: Cards visible, chart container present, latest invoices container present
 - **Invoices**: Table structure exists, create button visible
@@ -158,16 +176,18 @@ test.describe('Application Smoke Tests', () => {
 - **Error Pages**: 404 message visible
 
 ### Performance Targets
+
 - Single comprehensive test under 30 seconds
 - Fast page navigation without waiting for all data
 - Minimal setup - use existing seeded data
 - Focus on structure over content verification
 
 ### Components Needing Data-TestID Attributes
+
 1. **Login Form** (`app/login/page.tsx`)
-2. **Invoice Create Form** (`app/ui/invoices/create-form.tsx`) 
+2. **Invoice Create Form** (`app/ui/invoices/create-form.tsx`)
 3. **Invoice Edit Form** (`app/ui/invoices/edit-form.tsx`)
 4. **Invoice Table** (`app/ui/invoices/table.tsx`)
 5. **Customer Components** (`app/ui/customers/`)
 6. **Navigation Elements** (`app/ui/dashboard/nav-links.tsx`)
-7. **Error Pages** (404 components) 
+7. **Error Pages** (404 components)

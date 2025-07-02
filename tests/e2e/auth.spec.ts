@@ -31,8 +31,8 @@ test.describe('Authentication Tests', () => {
     // Verify dashboard elements are present
     await expect(page.locator('a[href="/dashboard"]')).toBeVisible(); // Navigation links
     await expect(page.locator('text=Home')).toBeVisible();
-    await expect(page.locator('text=Invoices')).toBeVisible();
-    await expect(page.locator('text=Customers')).toBeVisible();
+    await expect(page.locator('a[href="/dashboard/invoices"]')).toBeVisible(); // More specific for navigation link
+    await expect(page.locator('a[href="/dashboard/customers"]')).toBeVisible(); // More specific for navigation link
   });
 
   test('should login with admin credentials', async ({ page }) => {

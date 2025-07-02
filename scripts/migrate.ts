@@ -1,8 +1,11 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import * as schema from './schema';
+#!/usr/bin/env tsx
 
-// Environment-aware database connection
+import 'dotenv/config';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import postgres from 'postgres';
+
+// Environment-aware database connection for migrations
 function getDatabaseUrl(): string {
   const env = process.env.NODE_ENV;
 
@@ -20,7 +23,6 @@ function getDatabaseUrl(): string {
     case 'production':
       return process.env.POSTGRES_URL!;
     default:
-      // Fallback for local development
       return (
         process.env.DATABASE_URL_LOCAL ||
         'postgres://dev_user:dev_password@localhost:5433/nextjs_dashboard'
@@ -29,24 +31,36 @@ function getDatabaseUrl(): string {
 }
 
 function getSSLConfig(): any {
-  const env = process.env.NODE_ENV;
-
-  // Only require SSL in production
-  return env === 'production' ? 'require' : false;
+  return process.env.NODE_ENV === 'production' ? 'require' : false;
 }
 
+// For migrations, we need a separate connection that's closed after use
 const connectionUrl = getDatabaseUrl();
 const sslConfig = getSSLConfig();
 
 console.log(
-  `🗄️  Database connection: ${process.env.NODE_ENV || 'development'} environment`
+  `🗄️  Migration target: ${process.env.NODE_ENV || 'development'} environment`
 );
 
-const client = postgres(connectionUrl, {
+const migrationClient = postgres(connectionUrl, {
   ssl: sslConfig,
-  connect_timeout: 10,
-  idle_timeout: 20,
-  max_lifetime: 60 * 30,
+  max: 1,
 });
 
-export const db = drizzle(client, { schema });
+const db = drizzle(migrationClient);
+
+async function main() {
+  console.log('🚀 Starting database migration...');
+
+  try {
+    await migrate(db, { migrationsFolder: 'drizzle/migrations' });
+    console.log('✅ Migration completed successfully');
+  } catch (error) {
+    console.error('❌ Migration failed:', error);
+    process.exit(1);
+  } finally {
+    await migrationClient.end();
+  }
+}
+
+main();

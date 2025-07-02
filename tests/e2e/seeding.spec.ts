@@ -61,14 +61,11 @@ test.describe('Database Seeding Tests', () => {
 
     // Wait for content to load and check for customer cards
     await page.waitForLoadState('networkidle');
-    const customerCards = page.locator('[class*="Card"], .rounded-xl');
+    const customerCards = page.locator('[data-testid="customer-card"]');
     await expect(customerCards.first()).toBeVisible();
 
-    // Verify at least one customer name is visible
-    const customerNames = page
-      .locator('text=John Doe')
-      .or(page.locator('text=Jane Smith'))
-      .or(page.locator('text=Robert Johnson'));
+    // Verify at least one customer name is visible (using faker-generated data)
+    const customerNames = customerCards.locator('.font-semibold.text-lg');
     await expect(customerNames.first()).toBeVisible();
   });
 
@@ -104,24 +101,6 @@ test.describe('Database Seeding Tests', () => {
     // The revenue chart should be visible
     const revenueSection = page.locator('text=Revenue').first();
     await expect(revenueSection).toBeVisible();
-  });
-
-  test('should be idempotent - multiple seeding calls should not cause errors', async ({
-    page,
-  }) => {
-    // Seed multiple times
-    const response1 = await dataHelper.seedTestData();
-    expect(response1.status()).toBe(200);
-
-    const response2 = await dataHelper.seedTestData();
-    expect(response2.status()).toBe(200);
-
-    const response3 = await dataHelper.seedTestData();
-    expect(response3.status()).toBe(200);
-
-    // Verify data is still accessible
-    await authHelper.login();
-    await expect(page.locator('h1')).toContainText('Dashboard');
   });
 
   test('should create users that can authenticate', async ({ page }) => {

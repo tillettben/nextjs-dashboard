@@ -7,16 +7,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Development server**: `pnpm dev` (uses Turbopack for faster builds)
 - **Build for production**: `pnpm build`
 - **Start production server**: `pnpm start`
-- **Linting**: `pnpm lint`
+- **Linting**: `pnpm lint` and `pnpm lint:fix`
 - **Type checking**: `pnpm type-check`
 - **Testing**: `pnpm test`
 
 ### Database Commands (Drizzle ORM)
+
 - **Generate migrations**: `pnpm db:generate`
 - **Run migrations**: `pnpm db:migrate`
 - **Push schema changes**: `pnpm db:push`
 - **Open Drizzle Studio**: `pnpm db:studio`
-- **Seed database**: `pnpm db:seed`
+- **Seed development data**: `pnpm db:seed`
+- **Seed test data**: `pnpm db:seed:test`
+- **Seed production data**: `pnpm db:seed:prod` (HTTP endpoint)
 
 you also have a playwright mcp server you can use the view the app in the browser
 
@@ -29,8 +32,10 @@ You have 3 modes of operation:
 1. **NORMAL mode** - Standard assistance and guidance
 2. **PLAN mode** - Work with the user to define a comprehensive plan without making changes
 3. **ACT mode** - Execute changes to the codebase based on the approved plan
+4. **FIX_TESTS** - Fix either the tests specified by the user, or attempt to fix all the tests
 
 ### Mode Rules
+
 - Start in NORMAL mode and print `# Mode: NORMAL` at the beginning of each response
 - Only move to PLAN mode when user types `PLAN`
 - Only move to ACT mode when user types `ACT` after plan approval
@@ -38,6 +43,7 @@ You have 3 modes of operation:
 - If user asks for action while in PLAN mode, remind them to approve the plan first
 
 ### PLAN Mode Workflow
+
 1. Check git working directory is clean; if not, ask user to commit changes
 2. Create a markdown file in the `plans/` directory for the plan
 3. Analyze existing code to map full scope of changes needed
@@ -46,27 +52,55 @@ You have 3 modes of operation:
 6. Request user approval before suggesting ACT mode
 
 ### ACT Mode Workflow
+
 1. Check which steps have already been implemented
 2. Implement remaining steps in the plan
 3. After each phase/step, mention completion and next steps
 4. Check off completed items in the plan
 5. Upon completion:
    - Run `pnpm test` - if failing, ask what to do next
-   - Run `pnpm lint` - if failing, try to fix errors
+   - Run `pnpm lint:fix` - if failing, try to fix errors
    - Run `pnpm type-check` - if failing, ask what to do next
    - If all pass, ask user to commit changes
    - Rename plan file to `COMPLETE-original-plan-name.md`
+   - Update Claude.md Project Architecture section if there is any relevant an important new information
+
+### FIX_TESTS Mode workflow
+
+0. First check that git is in a clean slate and run the smoke tests to check the tests are running correctly.
+1. Ask whether the user want to what tests they want fixing.
+2. If they provide the tests list run the test and skip to 4. If the say all run all the tests, if they provide a file or folder run all the test in that folder.
+3. Review all the files in `./claude/test-fixes to get context on recent test fixes
+4. Analyze all the failing tests and the existing code to map and understand the possible fixes.
+5. Add a the list of failing tests to your todo so you can mark them off one by one.
+6. Attempt to fix the tests one test file at a time by following the FIX_TESTS Sub flow.
+7. Once all of the failing tests are passing, run the smoke tests, if they pass move to step 7, if any of them fail inform the user and ask what to do next.
+8. Create markdown file "YYYY-MM-DD_HH-MM-SS.md" in `./claude/test-fixes that list the failing tests and for each test what the fix was.
+9. Upon completion:
+   - Run `pnpm test` - if failing, ask what to do next
+   - Run `pnpm lint:fix` - if failing, try to fix errors
+   - Run `pnpm type-check` - if failing, ask what to do next
+   - If all pass, ask user to commit changes
    - Update Claude.md Project Architecture section to reflect changes
+
+## FIX_TESTS Sub flow
+
+1. run the test file
+2. Attempt the fix the failing tests in that file.
+3. run the test file, if all test are passing return to ### FIX_TESTS Mode workflow, if any are failing return to step 2.
 
 ## Next.js 15 Specific Rules
 
 ### Dynamic Route Parameters (CRITICAL)
+
 - **ALWAYS** use `Promise<{ id: string }>` for dynamic route params in Next.js 15, NOT `{ id: string }`
 - **ALWAYS** await params before accessing properties: `const { id } = await params;`
 - **NEVER** access params directly like `params.id` - this will cause build failures in Next.js 15
 
 ### Dynamic Route Pattern Template
+
 For any `[id]` or `[slug]` routes, ALWAYS use this exact pattern:
+
 ```typescript
 interface PageProps {
   params: Promise<{
@@ -74,7 +108,9 @@ interface PageProps {
   }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { id } = await params;
   // Use id here
 }
@@ -86,17 +122,21 @@ export default async function Page({ params }: PageProps) {
 ```
 
 ### Build Validation Requirements
+
 - Before generating any dynamic route code, verify it follows Next.js 15 async params pattern
 - Always test generated code with `pnpm exec tsc --noEmit` pattern in mind
 - When creating or modifying `[id]`, `[slug]`, or any dynamic route files, double-check async params usage
 
 ### Version-Specific Awareness
+
 - Always consider the project's Next.js version (currently 15.3.2) when generating routing code
 - Be aware of breaking changes in major versions and apply them consistently
 - When unsure about version-specific patterns, search existing codebase for similar implementations first
 
 ### Error Prevention Checklist
+
 Before generating any dynamic route code, verify:
+
 - [ ] `params` is typed as `Promise<{ ... }>`
 - [ ] `params` is awaited before property access
 - [ ] Both `generateMetadata` and page component handle async params
@@ -104,19 +144,24 @@ Before generating any dynamic route code, verify:
 
 ## Playwright Test Rules
 
-### Writing Playwright Tests
+### Writing or Editing Playwright Tests
+
 - Always use semantic data-testid attributes
-- Add data-testid attributes to files under test where required
+- Always user data-testid attributes locate elements in the top. If the element you are trying to access doesn't have one the add it.
 
 ### Running Playwright Tests
+
 Always use these flags to prevent hanging:
+
 - Use `--reporter=list` instead of `--reporter=html`
 - Use `--workers=1` for consistent results
 - Add `--timeout=30000` for reasonable timeouts
 - Never use `--headed`, `--ui`, or `--debug` flags
 - Prefer running specific test files over entire test suites
+- Show the user the output when running specs
 
 ### Example Test Commands
+
 ```bash
 # Run all tests
 npx playwright test --reporter=list --workers=1 --timeout=30000
@@ -137,6 +182,7 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 ### Key Architectural Components
 
 **Database Layer**:
+
 - Uses PostgreSQL with Drizzle ORM for type-safe database operations
 - Database connection configured via `POSTGRES_URL` environment variable with SSL required
 - Schema definitions located in `drizzle/schema/index.ts` with auto-generated TypeScript types
@@ -146,6 +192,7 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 - Drizzle configuration in `drizzle.config.ts`
 
 **Authentication System**:
+
 - NextAuth.js v5 (beta) with credentials provider
 - Configuration split between `auth.config.ts` and `auth.ts`
 - Middleware in `middleware.ts` protects dashboard routes
@@ -153,6 +200,7 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 - Password hashing with bcrypt
 
 **Routing Structure**:
+
 - App Router with nested layouts
 - Main dashboard at `/dashboard` with protected routes
 - Invoice management: `/dashboard/invoices` with CRUD operations
@@ -160,12 +208,14 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 - Route groups: `(overview)` for dashboard home page
 
 **Server Actions & Forms**:
+
 - Server actions in `app/lib/actions.ts` handle form submissions
 - Zod validation for form data
 - Progressive enhancement with `useFormState` and `useFormStatus`
 - Optimistic updates with revalidation
 
 **UI Components Structure**:
+
 - Component library in `app/ui/` organized by feature
 - Shared components: buttons, search, pagination, skeletons
 - Feature-specific components in subdirectories (dashboard/, invoices/, customers/)
@@ -174,16 +224,19 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 ### Data Flow Patterns
 
 **Search & Filtering**:
+
 - URL-based search parameters for pagination and filtering
 - Server-side filtering with Drizzle's `ilike()` and `or()` operators
 - Debounced search input with `use-debounce`
 
 **Error Handling**:
+
 - Error boundaries for route-level errors (`error.tsx`)
 - Not found pages (`not-found.tsx`)
 - Try-catch blocks with user-friendly error messages
 
 **Loading States**:
+
 - Loading UI with `loading.tsx` files
 - Skeleton components for content placeholders
 - Artificial delays in data fetching functions for demo purposes (remove in production)
@@ -205,7 +258,9 @@ You are a Senior Front-End Developer and an Expert in ReactJS, NextJS using App 
 - Don't say things to please me, if you think something is bad idea let me know
 
 ### Coding Environment
+
 The user asks questions about the following coding languages:
+
 - ReactJS
 - NextJS
 - TypeScript
@@ -214,7 +269,9 @@ The user asks questions about the following coding languages:
 - CSS
 
 ### Code Implementation Guidelines
+
 Follow these rules when you write code:
+
 - Use early returns whenever possible to make the code more readable.
 - Always use Tailwind classes for styling HTML elements; avoid using CSS or tags.
 - Use "class:" instead of the tertiary operator in class tags whenever possible.
@@ -223,60 +280,12 @@ Follow these rules when you write code:
 
 ## Library Versions
 
-Here are the libraries we are using:
-
-```json
-{
-  "private": true,
-  "scripts": {
-    "build": "next build",
-    "dev": "next dev --turbopack",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@heroicons/react": "^2.2.0",
-    "@tailwindcss/forms": "^0.5.10",
-    "@types/bcryptjs": "^3.0.0",
-    "autoprefixer": "10.4.20",
-    "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.2",
-    "clsx": "^2.1.1",
-    "drizzle-orm": "^0.44.2",
-    "i": "^0.3.7",
-    "lint": "^0.8.19",
-    "next": "latest",
-    "next-auth": "5.0.0-beta.29",
-    "postcss": "8.5.1",
-    "postgres": "^3.4.6",
-    "react": "latest",
-    "react-dom": "latest",
-    "tailwindcss": "3.4.17",
-    "typescript": "5.7.3",
-    "use-debounce": "^10.0.4",
-    "zod": "^3.25.17"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
-    "@types/node": "22.10.7",
-    "@types/react": "19.0.7",
-    "@types/react-dom": "19.0.3",
-    "drizzle-kit": "^0.31.4",
-    "eslint": "^9.30.0",
-    "eslint-config-next": "15.3.4"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "bcrypt",
-      "sharp"
-    ]
-  }
-}
-```
+Check `package.json` to see what libraries we are using
 
 ## Code Style and Structure
 
 Follow these .prettierrc rules:
+
 ```json
 {
   "semi": true,
@@ -320,11 +329,13 @@ Follow these .prettierrc rules:
 - Implement proper error logging and user-friendly error messages.
 
 ## Backend and Database
+
 - Uses PostgreSQL with Drizzle ORM for type-safe database operations
 - Schema-first approach with auto-generated TypeScript types
 - Use Zod schemas to validate data exchanged with the backend
 
 ### Drizzle ORM Guidelines
+
 - **Schema Definition**: All database schemas are defined in `drizzle/schema/index.ts`
 - **Database Client**: Import `db` from `drizzle/db.ts` for all database operations
 - **Query Building**: Use Drizzle's query builder methods (`select()`, `insert()`, `update()`, `delete()`)
@@ -333,7 +344,9 @@ Follow these .prettierrc rules:
 - **Filtering**: Use `eq()`, `ilike()`, `or()`, `and()` operators from `drizzle-orm`
 - **Conflict Resolution**: Use `onConflictDoNothing()` or `onConflictDoUpdate()` for upserts
 - **Raw SQL**: Use `sql` template literal when complex SQL is needed
-- **Migration**: Use `pnpm db:generate` to create migrations, `pnpm db:push` for development
+- **Migrations**: Use `pnpm db:generate` to create, `pnpm db:migrate` to run migrations
+- **Seeding**: Use Node.js scripts in `scripts/` directory for environment-specific seeding
+- **Testing**: Test seeding uses faker.js for deterministic, realistic data generation
 
 ## Key Conventions
 
@@ -349,10 +362,12 @@ Follow these .prettierrc rules:
 ## Important Implementation Details
 
 **Environment Variables**:
+
 - `POSTGRES_URL` required for database connection
 - `AUTH_SECRET` required for NextAuth.js
 
 **Database Schema**:
+
 - Tables: users, customers, invoices, revenue (defined in `drizzle/schema/index.ts`)
 - Invoice amounts stored in cents, converted to dollars in UI
 - Customer images stored as URLs
@@ -360,11 +375,13 @@ Follow these .prettierrc rules:
 - Foreign key relationships between invoices and customers
 
 **Form Validation**:
+
 - Server-side validation with Zod schemas
 - Client-side validation feedback through server actions
 - Form state management with React's `useFormState`
 
 **Styling**:
+
 - Tailwind CSS with custom configuration
 - Responsive design patterns
 - Hero icons for UI elements
@@ -372,8 +389,6 @@ Follow these .prettierrc rules:
 ## Development Notes
 
 The `deleteInvoice` function in `app/lib/actions.ts` intentionally throws an error for demonstration purposes. When implementing real deletion functionality, remove the `throw new Error` line.
-
-Some data fetching functions include artificial delays (`setTimeout`) for demo purposes - these should be removed in production environments.
 
 ## Output Expectations
 

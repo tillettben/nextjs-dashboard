@@ -7,4 +7,10 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.POSTGRES_URL!,
   },
+  verbose: true,
+  strict: true,
+  migrations: {
+    table: '__drizzle_migrations__',
+    schema: 'public',
+  },
 });

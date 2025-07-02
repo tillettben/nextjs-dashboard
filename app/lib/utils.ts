@@ -9,7 +9,7 @@ export const formatCurrency = (amount: number) => {
 
 export const formatDateToLocal = (
   dateStr: string,
-  locale: string = 'en-US',
+  locale: string = 'en-US'
 ) => {
   const date = new Date(dateStr);
   const options: Intl.DateTimeFormatOptions = {
@@ -23,12 +23,24 @@ export const formatDateToLocal = (
 
 export const generateYAxis = (revenue: Revenue[]) => {
   // Calculate what labels we need to display on the y-axis
-  // based on highest record and in 1000s
+  // based on highest record with intelligent step sizing
   const yAxisLabels = [];
-  const highestRecord = Math.max(...revenue.map((month) => month.revenue));
-  const topLabel = Math.ceil(highestRecord / 1000) * 1000;
+  const highestRecord = Math.max(...revenue.map(month => month.revenue));
 
-  for (let i = topLabel; i >= 0; i -= 1000) {
+  // Determine appropriate step size based on the highest value
+  let step = 1000;
+  if (highestRecord > 50000) {
+    step = 10000; // Use 10K steps for very large numbers
+  } else if (highestRecord > 20000) {
+    step = 5000; // Use 5K steps for moderately large numbers
+  } else if (highestRecord > 10000) {
+    step = 2000; // Use 2K steps for medium numbers
+  }
+  // else use 1K steps for smaller numbers
+
+  const topLabel = Math.ceil(highestRecord / step) * step;
+
+  for (let i = topLabel; i >= 0; i -= step) {
     yAxisLabels.push(`$${i / 1000}K`);
   }
 

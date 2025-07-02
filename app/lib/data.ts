@@ -45,8 +45,12 @@ export async function fetchCardData() {
     const customerCountPromise = db.select({ count: count() }).from(customers);
     const invoiceStatusPromise = db
       .select({
-        paid: sum(sql`CASE WHEN ${invoices.status} = 'paid' THEN ${invoices.amount} ELSE 0 END`),
-        pending: sum(sql`CASE WHEN ${invoices.status} = 'pending' THEN ${invoices.amount} ELSE 0 END`),
+        paid: sum(
+          sql`CASE WHEN ${invoices.status} = 'paid' THEN ${invoices.amount} ELSE 0 END`
+        ),
+        pending: sum(
+          sql`CASE WHEN ${invoices.status} = 'pending' THEN ${invoices.amount} ELSE 0 END`
+        ),
       })
       .from(invoices);
 
@@ -59,7 +63,9 @@ export async function fetchCardData() {
     const numberOfInvoices = Number(data[0][0]?.count ?? 0);
     const numberOfCustomers = Number(data[1][0]?.count ?? 0);
     const totalPaidInvoices = formatCurrency(Number(data[2][0]?.paid ?? 0));
-    const totalPendingInvoices = formatCurrency(Number(data[2][0]?.pending ?? 0));
+    const totalPendingInvoices = formatCurrency(
+      Number(data[2][0]?.pending ?? 0)
+    );
 
     return {
       numberOfCustomers,
@@ -198,8 +204,12 @@ export async function fetchFilteredCustomers(query: string) {
         email: customers.email,
         image_url: customers.imageUrl,
         total_invoices: count(invoices.id),
-        total_pending: sum(sql`CASE WHEN ${invoices.status} = 'pending' THEN ${invoices.amount} ELSE 0 END`),
-        total_paid: sum(sql`CASE WHEN ${invoices.status} = 'paid' THEN ${invoices.amount} ELSE 0 END`),
+        total_pending: sum(
+          sql`CASE WHEN ${invoices.status} = 'pending' THEN ${invoices.amount} ELSE 0 END`
+        ),
+        total_paid: sum(
+          sql`CASE WHEN ${invoices.status} = 'paid' THEN ${invoices.amount} ELSE 0 END`
+        ),
       })
       .from(customers)
       .leftJoin(invoices, eq(customers.id, invoices.customerId))
@@ -209,7 +219,12 @@ export async function fetchFilteredCustomers(query: string) {
           ilike(customers.email, `%${query}%`)
         )
       )
-      .groupBy(customers.id, customers.name, customers.email, customers.imageUrl)
+      .groupBy(
+        customers.id,
+        customers.name,
+        customers.email,
+        customers.imageUrl
+      )
       .orderBy(asc(customers.name));
 
     const customersData = data.map(customer => ({
@@ -241,13 +256,22 @@ export async function fetchCustomerById(id: string) {
         email: customers.email,
         image_url: customers.imageUrl,
         total_invoices: count(invoices.id),
-        total_pending: sum(sql`CASE WHEN ${invoices.status} = 'pending' THEN ${invoices.amount} ELSE 0 END`),
-        total_paid: sum(sql`CASE WHEN ${invoices.status} = 'paid' THEN ${invoices.amount} ELSE 0 END`),
+        total_pending: sum(
+          sql`CASE WHEN ${invoices.status} = 'pending' THEN ${invoices.amount} ELSE 0 END`
+        ),
+        total_paid: sum(
+          sql`CASE WHEN ${invoices.status} = 'paid' THEN ${invoices.amount} ELSE 0 END`
+        ),
       })
       .from(customers)
       .leftJoin(invoices, eq(customers.id, invoices.customerId))
       .where(eq(customers.id, id))
-      .groupBy(customers.id, customers.name, customers.email, customers.imageUrl);
+      .groupBy(
+        customers.id,
+        customers.name,
+        customers.email,
+        customers.imageUrl
+      );
 
     const customer = data.map(customer => ({
       ...customer,

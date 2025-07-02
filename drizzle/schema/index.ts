@@ -1,4 +1,11 @@
-import { pgTable, uuid, varchar, text, integer, date } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  varchar,
+  text,
+  integer,
+  date,
+} from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -16,7 +23,9 @@ export const customers = pgTable('customers', {
 
 export const invoices = pgTable('invoices', {
   id: uuid('id').defaultRandom().primaryKey(),
-  customerId: uuid('customer_id').references(() => customers.id).notNull(),
+  customerId: uuid('customer_id')
+    .references(() => customers.id)
+    .notNull(),
   amount: integer('amount').notNull(),
   status: varchar('status', { length: 255 }).notNull(),
   date: date('date').notNull(),

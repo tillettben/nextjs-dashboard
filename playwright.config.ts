@@ -85,5 +85,9 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      // Always use test environment for Playwright tests
+      NODE_ENV: 'test',
+    },
   },
 });

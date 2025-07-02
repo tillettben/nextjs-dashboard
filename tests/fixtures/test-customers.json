@@ -7,7 +7,7 @@
   },
   {
     "id": "3958dc9e-742f-4377-85e9-fec4b6a6442a",
-    "name": "Jane Smith", 
+    "name": "Jane Smith",
     "email": "jane@example.com",
     "image_url": "/customers/jane-smith.png"
   },
@@ -35,4 +35,4 @@
     "email": "sarah@example.com",
     "image_url": "/customers/sarah-davis.png"
   }
-] 
+]
