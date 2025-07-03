@@ -85,7 +85,7 @@ You have 3 modes of operation:
    - If all pass, ask user to commit changes
    - Update Claude.md Project Architecture section to reflect changes
 
-## FIX_TESTS Sub flow
+#### FIX_TESTS Sub flow
 
 1. run the test file
 2. Attempt the fix the failing tests in that file.
