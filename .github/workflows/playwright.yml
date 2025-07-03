@@ -47,10 +47,16 @@ jobs:
           NODE_ENV: test
       - name: Wait for application to be ready
         run: npx wait-on http://localhost:3000 --timeout 60000
+        env:
+          DATABASE_URL_TEST: postgres://postgres:postgres@localhost:5432/test_db
+          NODE_ENV: test
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
       - name: Run Playwright tests
         run: pnpm exec playwright test tests/e2e/smoke-test.spec.ts
+        env:
+          DATABASE_URL_TEST: postgres://postgres:postgres@localhost:5432/test_db
+          NODE_ENV: test
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
