@@ -34,6 +34,8 @@ jobs:
         run: npm install -g pnpm && pnpm install
       - name: Setup Database Schema
         run: pnpm exec tsx scripts/migrate.ts
+      - name: Seed test database
+        run: pnpm exec tsx scripts/seed-test.ts
       - name: Build Next.js application
         run: pnpm build
         env:
@@ -42,8 +44,6 @@ jobs:
         run: pnpm start &
       - name: Wait for application to be ready
         run: npx wait-on http://localhost:3000 --timeout 60000
-      - name: Seed test database
-        run: pnpm exec tsx scripts/seed-test.ts
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
       - name: Run Playwright tests
