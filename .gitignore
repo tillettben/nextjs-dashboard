@@ -46,4 +46,4 @@ node_modules/
 .cursor/
 
 # Git worktree
-.trees/
+trees/
