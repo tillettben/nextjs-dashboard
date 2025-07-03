@@ -31,17 +31,25 @@ export const { auth, signIn, signOut } = NextAuth({
           const { email, password } = parsedCredentials.data;
           const user = await getUser(email);
           if (!user) {
-            console.log(`No user found for email: ${email}`);
+            if (process.env.NODE_ENV === 'development' || process.env.CI) {
+              console.log(`No user found for email: ${email}`);
+            }
             return null;
           }
           const passwordsMatch = await bcrypt.compare(password, user.password);
           if (passwordsMatch) {
-            console.log(`Login successful for: ${email}`);
+            if (process.env.NODE_ENV === 'development' || process.env.CI) {
+              console.log(`Login successful for: ${email}`);
+            }
             return user;
           }
-          console.log(`Password mismatch for: ${email}`);
+          if (process.env.NODE_ENV === 'development' || process.env.CI) {
+            console.log(`Password mismatch for: ${email}`);
+          }
         }
-        console.log('Invalid credentials or validation failed');
+        if (process.env.NODE_ENV === 'development' || process.env.CI) {
+          console.log('Invalid credentials or validation failed');
+        }
         return null;
       },
     }),
