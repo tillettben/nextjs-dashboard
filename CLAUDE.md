@@ -52,20 +52,24 @@ You have 3 modes of operation:
 5. Draft comprehensive plan with checkboxes for every phase and step
 6. Request user approval before suggesting ACT mode
 
+
+
 ### ACT Mode Workflow
 
 1. Check which steps have already been implemented
 2. Implement remaining steps in the plan
 3. After each phase/step, mention completion and next steps
 4. Check off completed items in the plan
-5. Upon completion:
+5. When you finished checking of all the items on the plan
    - Run `pnpm test` - if failing, ask what to do next
    - Run `pnpm lint:fix` - if failing, try to fix errors
    - Run `pnpm type-check` - if failing, ask what to do next
-   - If all pass, ask user to commit changes
+   - if any fail inform the user and ask them what to do next. If the all pass move on to step 6
+6. If all pass, ask user if the are happy to complete if they are
    - Rename the plan file to `COMPLETE-original-plan-name.md`
    - Create an execution file `./claude/executions/original-plan-name.md` and summarize the final implementation
    - Update Claude.md Project Architecture section if there is any relevant an important new information
+   - Suggest the user commits the changes
 
 ### FIX_TESTS Mode workflow
 
@@ -150,6 +154,8 @@ Before generating any dynamic route code, verify:
 
 - Always use semantic data-testid attributes
 - Always user data-testid attributes locate elements in the top. If the element you are trying to access doesn't have one the add it.
+- Test are written in typescript and go in `./tests/e2e` and its subdirectories
+- Each page has its own e2e test. When adding features to a page you should add to the existing test file
 
 ### Running Playwright Tests
 
@@ -222,6 +228,8 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 - Shared components: buttons, search, pagination, skeletons
 - Feature-specific components in subdirectories (dashboard/, invoices/, customers/)
 - Custom fonts configuration in `app/ui/fonts.ts`
+- Dashboard components include: cards, revenue chart, latest invoices, top customers
+- Customer avatar component with fallback to colored initials for failed image loads
 
 ### Data Flow Patterns
 
@@ -242,6 +250,7 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 - Loading UI with `loading.tsx` files
 - Skeleton components for content placeholders
 - Artificial delays in data fetching functions for demo purposes (remove in production)
+- Dashboard includes top customers section with `fetchTopCustomers()` function using inner join for customers with invoices
 
 ## Development Guidelines
 

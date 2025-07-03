@@ -285,3 +285,39 @@ export async function fetchCustomerById(id: string) {
     return null;
   }
 }
+
+export async function fetchTopCustomers() {
+  try {
+    const data = await db
+      .select({
+        id: customers.id,
+        name: customers.name,
+        image_url: customers.imageUrl,
+        total_invoices: count(invoices.id),
+        total_amount: sum(invoices.amount),
+        total_pending: sum(
+          sql`CASE WHEN ${invoices.status} = 'pending' THEN ${invoices.amount} ELSE 0 END`
+        ),
+        total_paid: sum(
+          sql`CASE WHEN ${invoices.status} = 'paid' THEN ${invoices.amount} ELSE 0 END`
+        ),
+      })
+      .from(customers)
+      .innerJoin(invoices, eq(customers.id, invoices.customerId))
+      .groupBy(customers.id, customers.name, customers.imageUrl)
+      .orderBy(desc(sum(invoices.amount)))
+      .limit(5);
+
+    const topCustomers = data.map(customer => ({
+      ...customer,
+      total_amount: formatCurrency(Number(customer.total_amount ?? 0)),
+      total_pending: formatCurrency(Number(customer.total_pending ?? 0)),
+      total_paid: formatCurrency(Number(customer.total_paid ?? 0)),
+    }));
+
+    return topCustomers;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch top customers.');
+  }
+}

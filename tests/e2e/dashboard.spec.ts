@@ -228,4 +228,21 @@ test.describe('Dashboard Overview Tests', () => {
     // Should navigate to invoice edit page
     await expect(page).toHaveURL(`/dashboard/invoices/${id}/edit`);
   });
+
+  test('should display top customers section', async ({ page }) => {
+    await page.waitForLoadState('networkidle');
+
+    // Verify top customers section is present and functional
+    await expect(page.getByTestId('top-customers-container')).toBeVisible();
+    await expect(page.getByTestId('top-customers-title')).toContainText('Top Customers');
+    
+    // Verify at least one customer is displayed
+    const firstCustomer = page.locator('[data-testid^="customer-item-"]').first();
+    await expect(firstCustomer).toBeVisible();
+    
+    // Verify customer has total amount that's not $0.00
+    const firstTotal = page.locator('[data-testid^="customer-total-"]').first();
+    const totalText = await firstTotal.textContent();
+    expect(totalText).not.toBe('$0.00');
+  });
 });
