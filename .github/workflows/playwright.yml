@@ -36,12 +36,8 @@ jobs:
         run: pnpm exec tsx scripts/migrate.ts
       - name: Seed test database
         run: pnpm exec tsx scripts/seed-test.ts
-      - name: Build Next.js application
-        run: pnpm build
-        env:
-          SKIP_ENV_VALIDATION: true
-      - name: Start Next.js application
-        run: pnpm start &
+      - name: Start Next.js application in development mode
+        run: pnpm dev &
         env:
           DATABASE_URL_TEST: postgres://postgres:postgres@localhost:5432/test_db
           NODE_ENV: test
