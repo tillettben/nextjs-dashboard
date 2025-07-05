@@ -150,6 +150,41 @@ Before generating any dynamic route code, verify:
 
 ## Playwright Test Rules
 
+What to Test (Keep it Minimal)
+Authentication & Authorization:
+
+Login/logout flow
+Protected route access
+Role-based permissions
+
+Core Business Operations:
+
+Invoice CRUD (create, read, edit)
+Customer management workflow
+Payment status updates
+
+Navigation & Routing:
+
+Protected routes redirect correctly
+Deep links work after auth
+Breadcrumb navigation
+
+Data Persistence:
+
+Form submissions save correctly
+Page refreshes maintain state
+Search/filter results persist
+
+What NOT to Test
+Skip these (covered by unit/component tests):
+
+❌ Form validation messages
+❌ Button states and styling
+❌ Component rendering logic
+❌ Individual API responses
+❌ Edge cases and error states
+❌ Complex form interactions
+
 ### Writing or Editing Playwright Tests
 
 - Always use semantic data-testid attributes
@@ -162,7 +197,7 @@ Before generating any dynamic route code, verify:
 Always use these flags to prevent hanging:
 
 - Use `--reporter=list` instead of `--reporter=html`
-- Use `--workers=1` for consistent results
+- Use `--workers=4` for optimized parallel execution
 - Add `--timeout=30000` for reasonable timeouts
 - Never use `--headed`, `--ui`, or `--debug` flags
 - Prefer running specific test files over entire test suites
@@ -172,13 +207,13 @@ Always use these flags to prevent hanging:
 
 ```bash
 # Run all tests
-npx playwright test --reporter=list --workers=1 --timeout=30000
+NODE_ENV=test npx playwright test --reporter=list --workers=4 --timeout=30000
 
 # Run specific directory
-npx playwright test tests/e2e/auth/ --reporter=list --workers=1
+NODE_ENV=test npx playwright test tests/e2e/auth/ --reporter=list --workers=4
 
 # Run specific test file
-npx playwright test tests/e2e/login.spec.ts --reporter=list --workers=1
+NODE_ENV=test npx playwright test tests/e2e/login.spec.ts --reporter=list --workers=4
 ```
 
 When asked to run tests, automatically format the command with these non-interactive flags.
@@ -251,6 +286,14 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 - Skeleton components for content placeholders
 - Artificial delays in data fetching functions for demo purposes (remove in production)
 - Dashboard includes top customers section with `fetchTopCustomers()` function using inner join for customers with invoices
+
+**Test Architecture**:
+
+- **E2E Testing**: Playwright with TypeScript in `./tests/e2e` directory
+- **Global Setup**: Single database seeding via `tests/global-setup.ts` with minimal
+- **Test Environment**: Isolated test database with automatic SSL-free connection (`DATABASE_URL_TEST`)
+- **Test Strategy**: Core business operations only (authentication, CRUD, navigation, data persistence)
+- **Database Config**: Environment-aware connection in `drizzle/db.ts` with test/dev/prod configurations
 
 ## Development Guidelines
 

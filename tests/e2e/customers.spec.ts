@@ -1,316 +1,54 @@
 import { test, expect } from '@playwright/test';
 import { AuthHelper } from '../helpers/auth-helper';
-import { DataHelper } from '../helpers/data-helper';
 import { NavigationHelper } from '../helpers/navigation-helper';
 
-test.describe('Customer Management Tests', () => {
+test.describe('Customer Management Workflow', () => {
   let authHelper: AuthHelper;
-  let dataHelper: DataHelper;
   let navigationHelper: NavigationHelper;
 
   test.beforeEach(async ({ page }) => {
     authHelper = new AuthHelper(page);
-    dataHelper = new DataHelper(page);
     navigationHelper = new NavigationHelper(page);
 
-    // Setup test environment and login
-    await dataHelper.setupTestEnvironment();
     await authHelper.login();
     await navigationHelper.goToCustomers();
   });
 
-  test('should load customer list page correctly', async ({ page }) => {
-    await expect(page.locator('h1')).toContainText('Customers');
+  test('should access customer list page', async ({ page }) => {
     await expect(page).toHaveURL('/dashboard/customers');
-
-    // Verify page description (be more specific to avoid multiple matches)
-    await expect(
-      page
-        .locator('p')
-        .filter({ hasText: 'Manage your customer relationships' })
-    ).toBeVisible();
+    await expect(page.locator('h1')).toContainText('Customers');
   });
 
-  test('should display customer cards with correct information', async ({
-    page,
-  }) => {
+  test('should navigate to customer detail page', async ({ page }) => {
     await page.waitForLoadState('networkidle');
 
-    // Verify customer cards are present
-    const customerCards = page.locator('[data-testid="customer-card"]');
-    await expect(customerCards.first()).toBeVisible();
-
-    // Verify at least one customer card exists
-    const cardCount = await customerCards.count();
-    expect(cardCount).toBeGreaterThan(0);
-
-    // Verify first customer card has name and email
-    const firstCard = customerCards.first();
-    await expect(firstCard.locator('.font-semibold.text-lg')).toBeVisible();
-
-    // Verify email addresses are shown (with any domain)
-    const emailPattern = page.locator(
-      'text=/[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}/'
-    );
-    await expect(emailPattern.first()).toBeVisible();
-  });
-
-  test('should display customer profile images correctly', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Verify customer profile images
-    const profileImages = page.locator('img[alt*="profile picture"]');
-    await expect(profileImages.first()).toBeVisible();
-
-    // Verify images have proper dimensions and styling
-    const firstImage = profileImages.first();
-    const width = await firstImage.getAttribute('width');
-    const height = await firstImage.getAttribute('height');
-
-    expect(width).toBeTruthy();
-    expect(height).toBeTruthy();
-  });
-
-  test('should show customer invoice summaries', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Verify invoice summary information is displayed (check first instances)
-    await expect(page.locator('text=Total Invoices').first()).toBeVisible();
-    await expect(page.locator('text=Total Paid').first()).toBeVisible();
-    await expect(page.locator('text=Total Pending').first()).toBeVisible();
-
-    // Verify numeric values are shown
-    const invoiceCount = page.locator('text=/\\d+/').first();
-    await expect(invoiceCount).toBeVisible();
-  });
-
-  test('should display correct currency formatting in customer summaries', async ({
-    page,
-  }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Check for currency formatting in paid/pending amounts
-    const currencyAmounts = page.locator('text=/\\$[\\d,]+\\.\\d{2}/');
-    await expect(currencyAmounts.first()).toBeVisible();
-
-    // Verify at least one currency amount is displayed
-    const firstAmount = await currencyAmounts.first().textContent();
-    expect(firstAmount).toMatch(/\$[\d,]+\.\d{2}/);
-  });
-
-  test('should navigate to individual customer detail page', async ({
-    page,
-  }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Click on the first customer card/link
     const customerCard = page.locator('[data-testid="customer-card"]').first();
     await customerCard.click();
 
-    // Should navigate to customer detail page
     await expect(page).toHaveURL(/\/dashboard\/customers\/[a-f0-9-]+/);
-
-    // Verify customer detail page elements
-    await expect(page.locator('h1, h2')).toBeVisible();
   });
 
-  test('should display customer names as clickable elements', async ({
-    page,
-  }) => {
+  test('should navigate back from customer detail to list', async ({ page }) => {
     await page.waitForLoadState('networkidle');
 
-    // Verify customer names are clickable
-    const customerLinks = page
-      .locator('a[href*="/dashboard/customers/"]')
-      .first();
-    await expect(customerLinks).toBeVisible();
-
-    // Verify the link has correct href pattern
-    const href = await customerLinks.getAttribute('href');
-    expect(href).toMatch(/\/dashboard\/customers\/[a-f0-9-]+/);
-  });
-
-  test('should show customer count summary', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Look for customer count summary at bottom
-    const countSummary = page.locator('text=/Showing \\d+ customer/');
-    await expect(countSummary).toBeVisible();
-
-    // Verify it shows a reasonable number
-    const summaryText = await countSummary.textContent();
-    expect(summaryText).toMatch(/Showing \d+ customer/);
-  });
-
-  test('should display different customer types with varied data', async ({
-    page,
-  }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Verify multiple customers are shown
-    const customerCards = page.locator('[data-testid="customer-card"]');
-    const cardCount = await customerCards.count();
-    expect(cardCount).toBeGreaterThan(1);
-
-    // Verify different customer names appear by checking for unique content
-    const customerTitles = customerCards.locator('.font-semibold.text-lg');
-    const titleCount = await customerTitles.count();
-    expect(titleCount).toBeGreaterThan(1);
-
-    // Verify each card has different customer data
-    const firstCardName = await customerTitles.first().textContent();
-    const secondCardName = await customerTitles.nth(1).textContent();
-    expect(firstCardName).not.toBe(secondCardName);
-  });
-
-  test('should show accurate invoice totals per customer', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Get customer data from first card
-    const firstCard = page.locator('[data-testid="customer-card"]').first();
-
-    // Verify total invoices number is present and reasonable
-    const totalInvoicesText = await firstCard
-      .locator('text=/\\d+/')
-      .first()
-      .textContent();
-    const totalInvoices = parseInt(totalInvoicesText || '0');
-    expect(totalInvoices).toBeGreaterThanOrEqual(0);
-
-    // If there are invoices, verify amounts are shown
-    if (totalInvoices > 0) {
-      const amounts = firstCard.locator('text=/\\$[\\d,]+\\.\\d{2}/');
-      await expect(amounts.first()).toBeVisible();
-    }
-  });
-
-  test('should navigate back from customer detail to customer list', async ({
-    page,
-  }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Click on a customer card
     const customerCard = page.locator('[data-testid="customer-card"]').first();
     await customerCard.click();
-
-    // Verify we're on customer detail page
     await expect(page).toHaveURL(/\/dashboard\/customers\/[a-f0-9-]+/);
 
-    // Navigate back using browser back button or breadcrumb
     await page.goBack();
-
-    // Should return to customers list
     await expect(page).toHaveURL('/dashboard/customers');
-    await expect(page.locator('h1')).toContainText('Customers');
   });
 
-  test('should display customer invoice history on detail page', async ({
-    page,
-  }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Click on first customer
-    const customerCard = page.locator('[data-testid="customer-card"]').first();
-    await customerCard.click();
-
-    await page.waitForLoadState('networkidle');
-
-    // Verify customer detail page shows invoice information
-    // This depends on how the customer detail page is implemented
-    // For now, verify we're on the right page structure
-    await expect(page).toHaveURL(/\/dashboard\/customers\/[a-f0-9-]+/);
-
-    // Look for common customer detail elements
-    const customerInfo = page.locator(
-      'h1, h2, .customer-info, [class*="customer"]'
-    );
-    await expect(customerInfo.first()).toBeVisible();
-  });
-
-  test('should navigate from invoice table to customer detail', async ({
-    page,
-  }) => {
-    // First go to invoices page
+  test('should navigate from invoice to customer detail', async ({ page }) => {
     await navigationHelper.goToInvoices();
     await page.waitForLoadState('networkidle');
 
-    // Wait for table to load and find visible customer links
-    await page.waitForSelector('tbody tr', { timeout: 10000 });
-
-    // Find the first table row and look for customer link within it
-    const firstRow = page.locator('tbody tr').first();
-    const customerLink = firstRow.locator('a[href*="/dashboard/customers/"]');
-
-    // Ensure the link is visible and scrolled into view
-    await customerLink.scrollIntoViewIfNeeded();
-    await expect(customerLink).toBeVisible();
-
-    // Click the customer link
-    await customerLink.click({ force: true });
-
-    // Should navigate to customer detail page
+    const customerLink = page
+      .locator('tbody tr')
+      .first()
+      .locator('a[href*="/dashboard/customers/"]');
+    
+    await customerLink.click();
     await expect(page).toHaveURL(/\/dashboard\/customers\/[a-f0-9-]+/);
-  });
-
-  test('should display customer email addresses correctly', async ({
-    page,
-  }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Verify email format and visibility (any valid email domain)
-    const emailElements = page.locator(
-      'text=/[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}/'
-    );
-    await expect(emailElements.first()).toBeVisible();
-
-    // Verify email format is correct
-    const firstEmail = await emailElements.first().textContent();
-    expect(firstEmail).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
-  });
-
-  test('should show visual distinction between paid and pending amounts', async ({
-    page,
-  }) => {
-    await page.waitForLoadState('networkidle');
-
-    // Look for different styling on paid vs pending amounts
-    const paidAmounts = page.locator('text=Total Paid').locator('..');
-    const pendingAmounts = page.locator('text=Total Pending').locator('..');
-
-    await expect(paidAmounts.first()).toBeVisible();
-    await expect(pendingAmounts.first()).toBeVisible();
-
-    // Verify amounts have some visual styling
-    const paidAmount = paidAmounts
-      .locator('text=/\\$[\\d,]+\\.\\d{2}/')
-      .first();
-    const pendingAmount = pendingAmounts
-      .locator('text=/\\$[\\d,]+\\.\\d{2}/')
-      .first();
-
-    if (await paidAmount.isVisible()) {
-      await expect(paidAmount).toBeVisible();
-    }
-    if (await pendingAmount.isVisible()) {
-      await expect(pendingAmount).toBeVisible();
-    }
-  });
-
-  test('should handle empty customer state gracefully', async ({ page }) => {
-    // This test verifies the page structure handles data properly
-    await page.waitForLoadState('networkidle');
-
-    // Verify page loads even if some customers have no invoices
-    await expect(page.locator('h1')).toContainText('Customers');
-
-    // Verify customer cards are still displayed
-    const cards = page.locator('[data-testid="customer-card"]');
-    const cardCount = await cards.count();
-    expect(cardCount).toBeGreaterThanOrEqual(0);
-
-    // If cards exist, verify they have basic structure
-    if (cardCount > 0) {
-      await expect(cards.first()).toBeVisible();
-    }
   });
 });

@@ -36,6 +36,7 @@ function getSSLConfig(): any {
   const env = process.env.NODE_ENV;
 
   // Only require SSL in production
+  // For local development and testing, disable SSL
   return env === 'production' ? 'require' : false;
 }
 
