@@ -5,6 +5,7 @@ import {
   text,
   integer,
   date,
+  boolean,
 } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
@@ -36,6 +37,12 @@ export const revenue = pgTable('revenue', {
   revenue: integer('revenue').notNull(),
 });
 
+export const todos = pgTable('todos', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  completed: boolean('completed').default(false).notNull(),
+});
+
 // Export types for use in the application
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -48,3 +55,6 @@ export type NewInvoice = typeof invoices.$inferInsert;
 
 export type Revenue = typeof revenue.$inferSelect;
 export type NewRevenue = typeof revenue.$inferInsert;
+
+export type Todo = typeof todos.$inferSelect;
+export type NewTodo = typeof todos.$inferInsert;

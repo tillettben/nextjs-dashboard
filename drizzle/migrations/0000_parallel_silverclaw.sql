@@ -19,6 +19,12 @@ CREATE TABLE "revenue" (
 	CONSTRAINT "revenue_month_unique" UNIQUE("month")
 );
 --> statement-breakpoint
+CREATE TABLE "todos" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"title" varchar(255) NOT NULL,
+	"completed" boolean DEFAULT false NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "users" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(255) NOT NULL,

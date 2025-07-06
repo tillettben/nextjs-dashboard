@@ -56,20 +56,25 @@ You have 3 modes of operation:
 
 ### ACT Mode Workflow
 
+**IMPORTANT**: Always complete ALL steps in order. Steps 5 and 6 are critical and must not be skipped.
+
 1. Check which steps have already been implemented
 2. Implement remaining steps in the plan
 3. After each phase/step, mention completion and next steps
 4. Check off completed items in the plan
-5. When you finished checking of all the items on the plan
+5. **MANDATORY VALIDATION STEP** - When you finished checking off all the items on the plan:
    - Run `pnpm test` - if failing, ask what to do next
    - Run `pnpm lint:fix` - if failing, try to fix errors
    - Run `pnpm type-check` - if failing, ask what to do next
-   - if any fail inform the user and ask them what to do next. If the all pass move on to step 6
-6. If all pass, ask user if the are happy to complete if they are
+   - If any fail, inform the user and ask them what to do next. If they all pass, move on to step 6
+   - **NOTE**: If type-check fails due to stale cache, try `rm -rf .next` and run again
+6. **MANDATORY COMPLETION STEP** - If all validation passes, ask user if they are happy to complete:
    - Rename the plan file to `COMPLETE-original-plan-name.md`
    - Create an execution file `./claude/executions/original-plan-name.md` and summarize the final implementation
-   - Update Claude.md Project Architecture section if there is any relevant an important new information
+   - Update Claude.md Project Architecture section if there is any relevant and important new information
    - Suggest the user commits the changes
+
+**Critical Reminder**: Steps 5 and 6 are mandatory completion steps. Do not consider ACT mode complete without executing both steps.
 
 ### FIX_TESTS Mode workflow
 
@@ -290,10 +295,21 @@ This is a Next.js 15 dashboard application using the App Router pattern with Typ
 **Test Architecture**:
 
 - **E2E Testing**: Playwright with TypeScript in `./tests/e2e` directory
-- **Global Setup**: Single database seeding via `tests/global-setup.ts` with minimal
+- **Global Setup**: Single database seeding via `tests/global-setup.ts` with minimal data (2 users, 3 customers, 6 invoices, 6 revenue records)
 - **Test Environment**: Isolated test database with automatic SSL-free connection (`DATABASE_URL_TEST`)
+- **Performance Optimized**: 4 workers parallel execution, 27 focused tests (reduced from 117)
 - **Test Strategy**: Core business operations only (authentication, CRUD, navigation, data persistence)
 - **Database Config**: Environment-aware connection in `drizzle/db.ts` with test/dev/prod configurations
+- **Test Runtime**: ~19 seconds with 4 workers vs 60+ seconds with old approach (68% improvement)
+
+**Migration Architecture**:
+
+- **Migration System**: Drizzle-kit for all environments (development, test, production)
+- **Single Clean Migration**: `0000_parallel_silverclaw.sql` contains entire schema (users, customers, invoices, revenue, todos)
+- **Environment-Aware Config**: `drizzle.config.ts` with automatic database URL selection based on NODE_ENV
+- **Migration Commands**: `pnpm db:migrate:dev/test/prod` for environment-specific migrations
+- **Schema Definition**: Centralized in `drizzle/schema/index.ts` with TypeScript type exports
+- **CI/CD Integration**: GitHub Actions uses `pnpm db:migrate:test` for automated schema setup
 
 ## Development Guidelines
 
